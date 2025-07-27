@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NotebookLM 實作工作坊講義</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', 'Microsoft JhengHei', '微軟正黑體', sans-serif;
+            line-height: 1.9;
+            color: #212529;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px 40px;
+        }
+        header {
+            background-color: #007bff;
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.4em;
+            font-weight: 700;
+        }
+        header p {
+            font-size: 1.3em;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+        .section-title {
+            font-size: 2.2em;
+            color: #0056b3;
+            border-bottom: 4px solid #007bff;
+            padding-bottom: 10px;
+            margin-top: 40px;
+            margin-bottom: 25px;
+        }
+        .step-box {
+            margin-bottom: 25px;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .step-header {
+            background-color: #e9ecef;
+            padding: 12px 20px;
+            font-weight: 700;
+            font-size: 1.4em;
+            color: #495057;
+        }
+        .step-content {
+            padding: 20px;
+        }
+        .action-title {
+            font-weight: 600;
+            font-size: 1.1em;
+            color: #343a40;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .instruction {
+            margin-left: 20px;
+            margin-bottom: 15px;
+            padding-left: 15px;
+            border-left: 3px solid #007bff;
+        }
+        .copy-box {
+            background-color: #fff9c4;
+            border: 1px solid #fbc02d;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-family: "Courier New", Courier, monospace;
+            font-size: 1.1em;
+            word-wrap: break-word;
+        }
+        .screen-ref {
+            background-color: #e3f2fd;
+            border: 1px solid #90caf9;
+            color: #1565c0;
+            padding: 10px 15px;
+            margin-top: 10px;
+            border-radius: 5px;
+        }
+        .screen-ref::before {
+            content: '【畫面參考】 ';
+            font-weight: 700;
+        }
+        .important-note {
+            background-color: #fffde7;
+            border: 1px solid #fdd835;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        footer {
+            text-align: center;
+            padding: 25px;
+            margin-top: 40px;
+            color: #6c757d;
+            font-size: 1em;
+        }
+        
+        /* 吉祥物樣式 */
+        #mascot {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 120px;
+            z-index: 1000;
+            transition: transform 0.3s ease-in-out;
+            cursor: pointer;
+        }
+        #mascot:hover {
+            transform: scale(1.1) translateY(-5px);
+        }
+        #mascot img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        /* 響應式：小螢幕時吉祥物變小 */
+        @media (max-width: 768px) {
+            #mascot {
+                width: 90px;
+                bottom: 15px;
+                right: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>NotebookLM 實作工作坊講義</h1>
+            <p>以「防範金融詐騙」為例</p>
+        </header>
+
+        <!-- ==================== 新增的介紹區塊 ==================== -->
+        <h2 class="section-title">課程介紹：何時用 NotebookLM？</h2>
+        <div class="important-note">
+            <p><strong>【關鍵心法】</strong></p>
+            <ul>
+                <li>當您需要「<strong>整理分析現有資料</strong>」時，請用 <strong>NotebookLM</strong>。<br><em>（例如：分析您上傳的3篇論文、整理您的PDF講義重點）</em></li>
+                <li>當您需要「<strong>從零開始創意發想</strong>」時，請用 <strong>Gemini</strong>。<br><em>（例如：寫一首詩、設計一個新活動、畫一張圖、分析一張照片）</em></li>
+            </ul>
+        </div>
+
+        <!-- ==================== 步驟一 ==================== -->
+        <h2 class="section-title">步驟一：前置準備</h2>
+        <div class="step-box">
+            <div class="step-header">動作：複製本次課程使用的網址</div>
+            <div class="step-content">
+                <span class="action-title">請學員複製下方程式碼框中的網址：</span>
+                <div class="copy-box">https://moneywise.fsc.gov.tw/home.jsp?id=24&parentpath=0</div>
+                <div class="instruction">
+                    <b>操作方法：</b>用滑鼠將上面整串網址文字「反白」，然後在反白的文字上按「滑鼠右鍵」，選擇「<b>複製</b>」。或者，也可以使用鍵盤快速鍵 `Ctrl + C`。
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== 步驟二 ==================== -->
+        <h2 class="section-title">步驟二：建立 NotebookLM 筆記本</h2>
+        <div class="step-box">
+            <div class="step-header">動作 2.1：開啟並登入 NotebookLM</div>
+            <div class="step-content">
+                <span class="action-title">1. 開啟網站</span>
+                <div class="instruction">
+                    請在 Chrome 瀏覽器網址列輸入：<code>notebooklm.google.com</code>，然後按下 Enter 鍵。
+                </div>
+                <span class="action-title">2. 登入帳號</span>
+                <div class="instruction">
+                    如果畫面要求登入，請使用您的 Google 帳號（Gmail 信箱）完成登入。
+                </div>
+            </div>
+        </div>
+        <div class="step-box">
+            <div class="step-header">動作 2.2：建立新的筆記本</div>
+            <div class="step-content">
+                <span class="action-title">1. 點擊「新增筆記本」按鈕</span>
+                <div class="instruction">
+                    請找到畫面左上角，點擊藍色的「<b>+ 新增筆記本</b>」按鈕。
+                </div>
+                <div class="screen-ref">畫面上會跳出一個小視窗，要求您輸入筆記本的名稱。</div>
+
+                <span class="action-title">2. 輸入筆記本名稱</span>
+                <div class="instruction">
+                    請在輸入框中，輸入本次課程的專案名稱：<code>防詐騙教材實作</code>
+                </div>
+
+                <span class="action-title">3. 按下「確認」</span>
+                <div class="instruction">
+                    輸入完畢後，請點擊小視窗右下角的「<b>確認</b>」按鈕。
+                </div>
+                <div class="screen-ref">您將會進入一個空白的筆記本畫面，左邊是「來源」，右邊是「筆記」。</div>
+            </div>
+        </div>
+
+        <!-- ==================== 步驟三 ==================== -->
+        <h2 class="section-title">步驟三：匯入「防詐騙專區」資料</h2>
+        <div class="step-box">
+            <div class="step-header">動作：將網址加入 NotebookLM</div>
+            <div class="step-content">
+                <span class="action-title">1. 點擊「新增來源」</span>
+                <div class="instruction">
+                    請看畫面左下方的「<b>來源</b>」區塊，點擊裡面的「<b>+ 新增來源</b>」按鈕。
+                </div>
+                <div class="screen-ref">畫面上會出現一個選單，包含「Google 雲端硬碟」、「PDF」等選項。</div>
+
+                <span class="action-title">2. 選擇「網站連結」</span>
+                <div class="instruction">
+                    請在跳出的選單中，點擊「<b>網站連結</b>」這個選項。
+                </div>
+                <div class="screen-ref">畫面會出現一個輸入框，讓您貼上網址。</div>
+
+                <span class="action-title">3. 貼上網址</span>
+                <div class="instruction">
+                    請在輸入框中按「滑鼠右鍵」，選擇「<b>貼上</b>」（或使用鍵盤 `Ctrl + V`），將剛才複製的網址貼進去。
+                </div>
+
+                <span class="action-title">4. 按下「插入」</span>
+                <div class="instruction">
+                    貼上網址後，請點擊右邊的「<b>插入</b>」按鈕。
+                </div>
+                <div class="screen-ref">您會看到左邊「來源」區塊出現了新的項目，並有圖示在轉動，表示 AI 正在讀取資料。請稍待片刻直到圖示消失。</div>
+            </div>
+        </div>
+
+        <!-- ==================== 步驟四 ==================== -->
+        <h2 class="section-title">步驟四：核心功能實作</h2>
+        
+        <div class="step-box">
+            <div class="step-header">實作 4.1：查看自動摘要</div>
+            <div class="step-content">
+                <span class="action-title">操作指令：</span>
+                <div class="instruction">
+                    請用滑鼠「<b>左鍵</b>」，點擊一下左邊「來源」區塊中，剛剛加入的那個項目（標題為「金融監督管理委員會...」）。
+                </div>
+                <div class="screen-ref">點擊後，畫面中間就會自動顯示出 AI 整理好的「<b>摘要</b>」和「<b>關鍵主題</b>」。</div>
+            </div>
+        </div>
+
+        <div class="step-box">
+            <div class="step-header">實作 4.2：提問與來源查證</div>
+            <div class="step-content">
+                <span class="action-title">1. 提出問題</span>
+                <div class="instruction">
+                    請移動到頁面最下方的對話輸入框，複製並貼上以下問題：
+                </div>
+                <div class="copy-box">根據提供的資料，最常見的金融詐騙手法有哪些？</div>
+                <div class="instruction">
+                    貼上後，請點擊輸入框右邊的「<b>傳送</b>」按鈕（紙飛機圖示）。
+                </div>
+                 <span class="action-title">2. 來源查證</span>
+                <div class="instruction">
+                    請查看 AI 的回答，您會看到句子後面有藍色的數字，如 <code>[1]</code>。請用滑鼠點擊其中一個數字。
+                </div>
+                <div class="screen-ref">點擊後，右邊的原始文章會立刻跳到對應的段落並用黃色標示出來。這就是來源查證功能。</div>
+            </div>
+        </div>
+
+        <div class="step-box">
+            <div class="step-header">實作 4.3：釘選筆記 (建立教案)</div>
+            <div class="step-content">
+                <span class="action-title">1. 釘選 AI 的回答</span>
+                <div class="instruction">
+                    請在剛剛 AI 的回答區塊右上角，找到一個「<b>圖釘</b>」圖示，並點擊它。
+                </div>
+                <div class="screen-ref">該則回答會被完整複製到最右邊的「筆記」區塊。</div>
+                <span class="action-title">2. 新增自己的筆記</span>
+                <div class="instruction">
+                    請在最右邊的「筆記」區塊下方，找到並點擊「<b>+ 新增記事</b>」按鈕，然後輸入您自己的教學想法，例如：「這部分可以當作分組討論題目」。
+                </div>
+            </div>
+        </div>
+
+        <div class="step-box">
+            <div class="step-header">實作 4.4：生成心智圖</div>
+            <div class="step-content">
+                <span class="action-title">操作指令：</span>
+                <div class="instruction">
+                    請回到最下方的對話輸入框，複製並貼上以下指令：
+                </div>
+                <div class="copy-box">將「常見的金融投資詐騙類型」做成一張心智圖，包含手法和預防方法。</div>
+                <div class="instruction">
+                    貼上後，按下「<b>傳送</b>」。
+                </div>
+                <div class="screen-ref">AI 會在對話區生成一張可以互動的心智圖。</div>
+            </div>
+        </div>
+
+        <div class="step-box">
+            <div class="step-header">實作 4.5：製作語音檔</div>
+            <div class="step-content">
+                <span class="action-title">1. 點擊「建立語音總覽」</span>
+                <div class="instruction">
+                    請在對話紀錄的上方，找到一個有「<b>耳機</b>」圖案的按鈕，名稱是「<b>建立語音總覽</b>」，並點擊它。
+                </div>
+                <span class="action-title">2. 指定主題</span>
+                <div class="instruction">
+                    AI 會詢問您想討論什麼。請在跳出的輸入框中，輸入您想生成語音的主題，例如：
+                </div>
+                <div class="copy-box">如何辨識釣魚網站和詐騙簡訊</div>
+                <div class="instruction">
+                    輸入完畢後，按下「<b>產生</b>」。
+                </div>
+                <div class="screen-ref">請稍待片刻，AI 就會生成一段可播放的音檔。</div>
+            </div>
+        </div>
+        
+        <!-- ==================== 實作練習 ==================== -->
+        <h2 class="section-title">綜合實作練習：設計一堂「防範釣魚詐騙」課程</h2>
+        <div style="background-color: #fffbe6; border: 2px solid #ffc107; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+            <p style="font-size: 1.2em; font-weight: 600; color: #856404;">【任務說明】</p>
+            <p>現在，請老師們化身為一位課程設計師。您的任務是利用 NotebookLM，從無到有設計出一份關於「如何防範釣魚網站與簡訊詐騙」的簡易教案。您需要完成以下 <strong>五個任務</strong>，並將所有成果「釘選」到右邊的筆記板上。</p>
+        </div>
+
+        <div class="step-box">
+            <div class="step-header">任務一：新增第二份資料來源</div>
+            <div class="step-content">
+                <span class="action-title">1. 複製新的網址</span>
+                <div class="instruction">
+                    這次我們需要更專門的資料。請複製以下這篇關於「釣魚信件」的文章網址：
+                </div>
+                <div class="copy-box">https://www.tsg.com.tw/blog-detail10-299-0-phishing.htm</div>
+
+                <span class="action-title">2. 將新網址加入來源</span>
+                <div class="instruction">
+                    請重複【步驟三】的動作，點擊「<b>+ 新增來源</b>」→「<b>網站連結</b>」，將這個新網址加入到您的筆記本中。
+                </div>
+                <div class="screen-ref">完成後，您的「來源」區塊現在應該會有 <strong>兩個</strong> 項目。</div>
+            </div>
+        </div>
+
+        <div class="step-box">
+            <div class="step-header">任務二：比較並整理重點</div>
+            <div class="step-content">
+                <span class="action-title">1. 勾選所有來源</span>
+                <div class="instruction">
+                    請在左邊的「來源」區塊，將兩個來源項目旁邊的「<b>核取方塊 (小框框)</b>」都打勾。這表示您要 AI 同時參考這兩份資料。
+                </div>
+                <span class="action-title">2. 提出整合性問題</span>
+                <div class="instruction">
+                    請在下方的對話框中，提出以下問題，讓 AI 幫您整理一份綜合性的筆記：
+                </div>
+                <div class="copy-box">綜合我提供的兩份資料，請用點列式摘要出「釣魚網站」、「釣魚簡訊」和「釣魚郵件」的共通特徵。</div>
+                <span class="action-title">3. 釘選成果</span>
+                <div class="instruction">
+                    請將 AI 生成的摘要成果，用「<b>圖釘</b>」功能釘選到右邊的筆記板。
+                </div>
+            </div>
+        </div>
+
+        <div class="step-box">
+            <div class="step-header">任務三：設計課堂評量題目</div>
+            <div class="step-content">
+                <span class="action-title">1. 生成選擇題</span>
+                <div class="instruction">
+                    請向 AI 下達以下指令，為您的課程設計評量題目：
+                </div>
+                <div class="copy-box">根據所有資料，設計 3 道關於防範釣魚詐騙的選擇題，並附上正確答案與詳解。</div>
+                 <span class="action-title">2. 釘選成果</span>
+                <div class="instruction">
+                    請將生成的題目與答案，用「<b>圖釘</b>」功能釘選到右邊的筆記板。
+                </div>
+            </div>
+        </div>
+
+        <div class="step-box">
+            <div class="step-header">任務四：創建視覺化學習輔助工具</div>
+            <div class="step-content">
+                <span class="action-title">1. 建立「處理流程圖」</span>
+                <div class="instruction">
+                    心智圖適合發散思考，但流程圖更適合步驟化教學。請向 AI 下達以下指令：
+                </div>
+                <div class="copy-box">幫我創建一個「收到可疑簡訊或郵件時的處理步驟」流程圖。</div>
+                 <span class="action-title">2. 釘選成果</span>
+                <div class="instruction">
+                    請將 AI 生成的流程圖，用「<b>圖釘</b>」功能釘選到右邊的筆記板。
+                </div>
+            </div>
+        </div>
+
+        <div class="step-box">
+            <div class="step-header">任務五：整理與命名筆記</div>
+            <div class="step-content">
+                <span class="action-title">1. 查看筆記板</span>
+                <div class="instruction">
+                    現在，請查看您最右邊的筆記板。上面應該已經釘選了「<b>共通特徵摘要</b>」、「<b>3 道選擇題</b>」和「<b>處理流程圖</b>」。
+                </div>
+                <span class="action-title">2. 重新命名釘選的筆記</span>
+                <div class="instruction">
+                    用滑鼠點擊每個釘選筆記的標題（例如 "摘要"），您可以為它重新命名，讓教案更清晰。請試著將它們分別改名為：
+                    <ul>
+                        <li><code>釣魚詐騙共通點</code></li>
+                        <li><code>課堂小測驗</code></li>
+                        <li><code>學生應對SOP</code></li>
+                    </ul>
+                </div>
+                <div class="screen-ref">恭喜您！您已經成功利用 NotebookLM，完成了一份結構完整的數位教案草稿！</div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Copyright © Liyuchiutiger Gongminshen</p>
+        </footer>
+    </div>
+    
+    <!-- 吉祥物 HTML 元素 -->
+    <div id="mascot">
+        <img src="image/LiyuChill.svg" alt="吉祥物">
+    </div>
+
+</body>
+</html>
