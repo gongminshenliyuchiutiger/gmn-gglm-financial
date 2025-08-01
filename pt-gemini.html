@@ -12,6 +12,7 @@
             background-color: #f8f9fa;
             margin: 0;
             padding: 20px;
+            transition: background-color 0.3s ease;
         }
         .container {
             max-width: 960px;
@@ -20,14 +21,23 @@
             border: 1px solid #dee2e6;
             border-radius: 8px;
             padding: 20px 40px;
+            transition: all 0.3s ease;
         }
         header {
-            background-color: #4A148C; /* Gemini-style purple */
+            background-color: #4A148C;
             color: white;
-            padding: 30px;
+            padding: 20px 30px; /* 微調 padding */
             text-align: center;
             border-radius: 8px;
             margin-bottom: 30px;
+            display: flex; /* 使用 flexbox 來佈局 */
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap; /* 在小螢幕上換行 */
+            gap: 15px;
+        }
+        header .title-group {
+            text-align: left;
         }
         header h1 {
             margin: 0;
@@ -41,8 +51,8 @@
         }
         .section-title {
             font-size: 2.2em;
-            color: #6A1B9A; /* Gemini-style purple */
-            border-bottom: 4px solid #CE93D8; /* Lighter purple */
+            color: #6A1B9A;
+            border-bottom: 4px solid #CE93D8;
             padding-bottom: 10px;
             margin-top: 40px;
             margin-bottom: 25px;
@@ -52,6 +62,7 @@
             border: 1px solid #ced4da;
             border-radius: 8px;
             overflow: hidden;
+            background-color: #fff; /* 確保有背景色 */
         }
         .step-header {
             background-color: #e9ecef;
@@ -74,11 +85,11 @@
             margin-left: 20px;
             margin-bottom: 15px;
             padding-left: 15px;
-            border-left: 3px solid #8E24AA; /* Gemini-style purple */
+            border-left: 3px solid #8E24AA;
         }
         .copy-box {
-            background-color: #f3e5f5; /* Light purple */
-            border: 1px solid #ab47bc; /* Medium purple */
+            background-color: #f3e5f5;
+            border: 1px solid #ab47bc;
             padding: 15px;
             margin: 10px 0;
             border-radius: 5px;
@@ -95,7 +106,7 @@
             border-radius: 5px;
         }
         .screen-ref::before {
-            content: '【畫面參考】 ';
+            content: '【神之迷音】 ';
             font-weight: 700;
         }
         .important-note {
@@ -112,14 +123,13 @@
             color: #6c757d;
             font-size: 1em;
         }
-        
         #mascot {
             position: fixed;
             bottom: 20px;
             right: 20px;
             width: 120px;
             z-index: 1000;
-            transition: transform 0.3s ease-in-out;
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease;
             cursor: pointer;
         }
         #mascot:hover {
@@ -132,11 +142,148 @@
         }
         
         @media (max-width: 768px) {
+            header {
+                justify-content: center;
+            }
             #mascot {
                 width: 90px;
                 bottom: 15px;
                 right: 15px;
             }
+        }
+        
+        /* --- 新增：簡報模式相關樣式 --- */
+
+        /* 模式切換按鈕 */
+        #toggle-mode-btn {
+            background-color: #fff;
+            color: #4A148C;
+            border: 2px solid #fff;
+            padding: 10px 20px;
+            font-size: 1em;
+            font-weight: 700;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            white-space: nowrap;
+        }
+        #toggle-mode-btn:hover {
+            background-color: #f3e5f5;
+            transform: scale(1.05);
+        }
+
+        /* 簡報導覽列 (預設隱藏) */
+        #presentation-controls {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px 0;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        #presentation-controls button {
+            background: none;
+            border: 2px solid white;
+            color: white;
+            font-size: 1.2em;
+            padding: 8px 18px;
+            margin: 0 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        #presentation-controls button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        #slide-counter {
+            font-size: 1.2em;
+            min-width: 100px;
+            text-align: center;
+        }
+
+        /* 投影片基礎樣式 (預設情況下不影響佈局) */
+        .slide {
+             /* 在講義模式下沒有特殊樣式 */
+        }
+
+        /* 當進入簡報模式時的樣式 (透過 body.presentation-mode 觸發) */
+        body.presentation-mode {
+            background-color: #212529; /* 深色背景 */
+            overflow: hidden; /* 隱藏滾動條 */
+        }
+        
+        /* 簡報模式下，主要容器變成一個透明的、置中的 flex 容器 */
+        body.presentation-mode .container {
+            max-width: 100%;
+            width: 100%;
+            height: 100vh;
+            padding: 0;
+            margin: 0;
+            border: none;
+            border-radius: 0;
+            background-color: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        /* 簡報模式下，隱藏不需要的元素 */
+        body.presentation-mode header,
+        body.presentation-mode footer,
+        body.presentation-mode #mascot {
+            display: none;
+        }
+
+        /* 簡報模式下，顯示導覽列 */
+        body.presentation-mode #presentation-controls {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* 簡報模式下，隱藏所有投影片 */
+        body.presentation-mode .slide {
+            display: none;
+        }
+
+        /* 簡報模式下，只顯示當前作用中的投影片 */
+        body.presentation-mode .slide.active {
+            display: block;
+            width: 90%;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-sizing: border-box;
+            /* 預留導覽列空間，並允許投影片內部滾動 */
+            max-height: calc(100vh - 120px); 
+            overflow-y: auto;
+        }
+
+        /* 簡報模式下對投影片內容的美化微調 */
+        body.presentation-mode .section-title {
+            font-size: 3em;
+            text-align: center;
+            border-bottom-width: 5px;
+        }
+        body.presentation-mode .step-box {
+            border: none;
+            box-shadow: none;
+            margin-bottom: 0;
+        }
+        body.presentation-mode .intro-block p {
+            font-size: 1.4em;
         }
     </style>
 </head>
@@ -144,12 +291,17 @@
 
     <div class="container">
         <header>
-            <h1>Gemini 實作工作坊講義</h1>
-            <p>以「防範金融詐騙」為例</p>
+            <div class="title-group">
+                <h1>Gemini 實作工作坊講義</h1>
+                <p>以「防範金融詐騙」為例</p>
+            </div>
+            <!-- 新增：模式切換按鈕 -->
+            <button id="toggle-mode-btn">切換簡報模式</button>
         </header>
 
-        <h2 class="section-title">課程介紹：何時用 Gemini？</h2>
-        <div class="important-note">
+        <!-- 為每個要當作投影片的區塊加上 "slide" class -->
+        <h2 class="section-title slide">課程介紹：何時用 Gemini？</h2>
+        <div class="important-note slide">
             <p><strong>【關鍵心法】</strong></p>
             <ul>
                 <li>當您需要「<strong>整理分析現有資料</strong>」時，請用 <strong>NotebookLM</strong>。<br><em>（例如：分析您上傳的3篇論文、整理您的PDF講義重點）</em></li>
@@ -157,8 +309,8 @@
             </ul>
         </div>
 
-        <h2 class="section-title">步驟一：登入與介面認識</h2>
-        <div class="step-box">
+        <h2 class="section-title slide">步驟一：登入與介面認識</h2>
+        <div class="step-box slide">
             <div class="step-header">動作：開啟並登入 Gemini</div>
             <div class="step-content">
                 <span class="action-title">1. 開啟網站</span>
@@ -171,24 +323,53 @@
                 </div>
             </div>
         </div>
-
-        <h2 class="section-title">步驟二：核心功能實作</h2>
         
-        <div class="step-box">
+        <!-- 【新增】說明新版介面功能 -->
+        <div class="step-box slide">
+            <div class="step-header">動作：認識主要操作介面</div>
+            <div class="step-content">
+                <span class="action-title">1. 選擇模型 (Model)</span>
+                <div class="instruction">
+                    在畫面上方，您可以看到目前的模型，例如 <b>2.5 Flash</b>。點擊它可以切換模型：
+                    <ul>
+                        <li><b>2.5 Flash：</b>速度快，適合快速問答、創意發想、內容摘要。</li>
+                        <li><b>2.5 Pro：</b>能力更強，適合複雜的邏輯推理、程式設計、深度分析。</li>
+                    </ul>
+                   
+                </div>
+
+                <span class="action-title">2. 認識輸入框功能</span>
+                <div class="instruction">
+                    在最下方的「請輸入 Gemini 提示詞」輸入框旁，有幾個實用圖示：
+                    <ul>
+                        <li><b>上傳檔案{+}：</b>點擊這裡可以上傳圖片、文件等檔案讓 Gemini 分析。</li>
+                        <li><b>Deep Research：</b>針對問題進行更深入、更廣泛的網路搜尋與分析，產生詳細報告。</li>
+                        <li><b>Canvas：</b>線上白板，可以將想法視覺化、組織成心智圖或流程圖。</li>
+			<li><b>圖像：</b>根據文字描述，創作或生成新的圖片的功能。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+
+        <h2 class="section-title slide">步驟二：核心功能實作</h2>
+        
+        <div class="step-box slide">
             <div class="step-header">實作 2.1：創意發想 (生成情境劇本)</div>
             <div class="step-content">
                 <span class="action-title">操作指令：</span>
                 <div class="instruction">
                     請在畫面下方的輸入框中，複製並貼上以下指令：
                 </div>
-                <div class="copy-box">請扮演一位編劇，寫一段短劇腳本。角色有兩位：一位是想買限量球鞋的大學生小明，另一位是他的朋友小華。劇情是小明收到一則「限量球鞋限時特價」的簡訊，小華如何一步步引導他發現這可能是個詐騙陷阱。</div>
+                <div class="copy-box">請扮演一位編劇，寫一段短劇腳本。角色有兩位：一位是想買限量球鞋的大學生小金，另一位是他的朋友小利。劇情是小金收到一則「限量球鞋限時特價」的簡訊，小利如何一步步引導他發現這可能是個詐騙陷阱。</div>
                 <div class="instruction">
                     貼上後，按下右邊的「<b>傳送</b>」按鈕（紙飛機圖示）。
                 </div>
             </div>
         </div>
 
-        <div class="step-box">
+        <div class="step-box slide">
+            <!-- 【修改】更新圖片上傳的說明 -->
             <div class="step-header">實作 2.2：分析圖片 (找出詐騙疑點)</div>
             <div class="step-content">
                 <span class="action-title">1. 尋找範例圖片</span>
@@ -197,7 +378,7 @@
                 </div>
                 <span class="action-title">2. 上傳圖片</span>
                 <div class="instruction">
-                    回到 Gemini，點擊輸入框左邊的「<b>上傳圖片</b>」圖示（看起來像一座小山）。選擇您剛剛下載的詐騙簡訊圖片。
+                    回到 Gemini，點擊輸入框旁邊的「<b>+</b>」圖示。選擇您剛剛下載的詐騙簡訊圖片。
                 </div>
                 <span class="action-title">3. 提出分析指令</span>
                 <div class="instruction">
@@ -210,7 +391,7 @@
             </div>
         </div>
 
-        <div class="step-box">
+        <div class="step-box slide">
             <div class="step-header">實作 2.3：生成結構化內容 (製作表格)</div>
             <div class="step-content">
                 <span class="action-title">操作指令：</span>
@@ -224,18 +405,15 @@
             </div>
         </div>
 
-        <h2 class="section-title">步驟三：優化與驗證結果</h2>
+        <h2 class="section-title slide">步驟三：優化與匯出結果</h2>
         
-        <div class="step-box">
-            <div class="step-header">實作 3.1：修改回答 (查看草稿 & 編輯提示)</div>
+        <!-- 【修改】刪除「查看草稿」部分，簡化步驟 -->
+        <div class="step-box slide">
+            <div class="step-header">實作 3.1：編輯提示以優化回答</div>
             <div class="step-content">
-                <span class="action-title">1. 查看其他草稿</span>
+                <span class="action-title">編輯您的提示</span>
                 <div class="instruction">
-                    請找到剛剛 Gemini 生成的「比較表格」。在回答的右上角，點擊「<b>顯示其他草稿</b>」。您可以切換查看 Gemini 提供的不同版本，選擇您最喜歡的一個。
-                </div>
-                <span class="action-title">2. 編輯您的提示</span>
-                <div class="instruction">
-                    假設您對表格不完全滿意。請找到您當時提出「請幫我製作一個表格...」的那則問題，旁邊有一個「<b>鉛筆</b>」圖示，點擊它。
+                    假設您對剛才生成的表格不完全滿意。請找到您當時提出「請幫我製作一個表格...」的那則問題，旁邊有一個「<b>鉛筆</b>」圖示，點擊它。
                 </div>
                 <div class="instruction">
                     將原本的指令修改成：<code>請幫我製作一個表格，比較「釣魚網站詐騙」和「假投資詐騙」的差異。欄位需要包含：詐騙類型、常見手法、目標對象、防範方法、和一句給受害者的提醒。</code> 然後按下「<b>更新</b>」。
@@ -244,17 +422,13 @@
             </div>
         </div>
 
-        <div class="step-box">
-            <div class="step-header">實作 3.2：事實查核與匯出</div>
+        <!-- 【修改】刪除「事實查核」部分，簡化步驟 -->
+        <div class="step-box slide">
+            <div class="step-header">實作 3.2：匯出成果</div>
             <div class="step-content">
-                <span class="action-title">1. 進行事實查核</span>
+                <span class="action-title">匯出成果</span>
                 <div class="instruction">
-                    在 Gemini 的任何一個文字回答下方，找到一個「<b>G</b>」圖示的「<b>Google 查證</b>」按鈕，點擊它。
-                </div>
-                <div class="screen-ref">Gemini 會將回答內容分段，並在網路上尋找相關資料。句子被標示為「綠色」代表找到相似內容；「橘色」代表可能找到不同資訊，提醒您進一步確認。</div>
-                <span class="action-title">2. 匯出成果</span>
-                <div class="instruction">
-                    找到您最滿意的表格或文字回答，點擊下方的「<b>分享及匯出</b>」圖示（一個向上的箭頭）。
+                    找到您最滿意的表格或文字回答，點擊下方的「<b>分享及匯出</b>」圖示。
                 </div>
                 <div class="instruction">
                     在選單中，點擊「<b>匯出至 Google 文件</b>」。Gemini 會自動幫您建立一個新的 Google 文件，並將內容儲存進去，方便您後續編輯或列印。
@@ -262,14 +436,13 @@
             </div>
         </div>
 
-        <!-- ==================== 綜合實作練習 ==================== -->
-        <h2 class="section-title">綜合實作練習：設計一份「遊戲點數詐騙」防範教材</h2>
-        <div style="background-color: #e8eaf6; border: 2px solid #5c6bc0; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+        <h2 class="section-title slide">綜合實作練習：設計一份「遊戲點數詐騙」防範教材</h2>
+        <div class="slide" style="background-color: #e8eaf6; border: 2px solid #5c6bc0; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
             <p style="font-size: 1.2em; font-weight: 600; color: #1a237e;">【任務說明】</p>
-            <p>您的任務是為國中生設計一份關於「如何防範遊戲點數詐騙」的數位教材包。請運用本堂課學到的所有 Gemini 技巧，依序完成以下 <strong>四個任務</strong>。</p>
+            <p class="intro-block">您的任務是為學生設計一份關於「如何防範遊戲點數詐騙」的數位教材包。請運用本堂課學到的所有 Gemini 技巧，依序完成以下 <strong>四個任務</strong>。</p>
         </div>
 
-        <div class="step-box">
+        <div class="step-box slide">
             <div class="step-header">任務一：生成比較表格</div>
             <div class="step-content">
                 <span class="action-title">操作指令：</span>
@@ -280,7 +453,7 @@
             </div>
         </div>
 
-        <div class="step-box">
+        <div class="step-box slide">
             <div class="step-header">任務二：創作宣導圖片</div>
             <div class="step-content">
                 <span class="action-title">操作指令：</span>
@@ -291,7 +464,7 @@
             </div>
         </div>
 
-        <div class="step-box">
+        <div class="step-box slide">
             <div class="step-header">任務三：設計情境申論題</div>
             <div class="step-content">
                 <span class="action-title">操作指令：</span>
@@ -301,32 +474,142 @@
                 <div class="copy-box">請設計一個關於遊戲點數詐騙的情境申論題，情境是一位國中生在網路上遇到一個人說可以用半價幫他儲值遊戲點數，但要求先提供帳號密碼。題目需引導學生思考風險和正確作法。</div>
             </div>
         </div>
-
-        <div class="step-box">
-            <div class="step-header">任務四：查核與匯出</div>
+        
+        <!-- 【修改】移除查核要求，聚焦在匯出 -->
+        <div class="step-box slide">
+            <div class="step-header">任務四：匯出教材初稿</div>
             <div class="step-content">
                 <span class="action-title">操作指令：</span>
                 <div class="instruction">
                     最後，整合您的成果。
                 </div>
                 <div class="instruction">
-                    1. 請對您覺得最滿意的「情境申論題」回答，進行一次「<b>Google 查證</b>」。<br>
-                    2. 接著，將這個回答「<b>匯出至 Google 文件</b>」，完成您的教材初稿。
+                    將您在任務三產出的「情境申論題」回答，「<b>匯出至 Google 文件</b>」，完成您的教材初稿。
                 </div>
-                <div class="screen-ref">恭喜您！您已成功運用 Gemini 的完整功能，快速生成了一整套包含表格、圖片、申論題的數位教材包！</div>
+                <div class="screen-ref">恭喜您！您已成功運用 Gemini 的核心功能，快速生成了一整套包含表格、圖片、申論題的數位教材包！</div>
             </div>
         </div>
-
 
         <footer>
             <p>Copyright © Liyuchiutiger Gongminshen</p>
         </footer>
     </div>
     
-    <!-- 吉祥物 HTML 元素 -->
     <div id="mascot">
         <img src="image/LiyuChill.svg" alt="吉祥物">
     </div>
 
+    <!-- 新增：簡報導覽列 HTML -->
+    <div id="presentation-controls">
+        <button id="prev-slide-btn">‹ 上一張</button>
+        <span id="slide-counter"></span>
+        <button id="next-slide-btn">下一張 ›</button>
+    </div>
+
+    <!-- 新增：簡報模式控制的 JavaScript -->
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const body = document.body;
+        const toggleBtn = document.getElementById('toggle-mode-btn');
+        const controls = document.getElementById('presentation-controls');
+        const prevBtn = document.getElementById('prev-slide-btn');
+        const nextBtn = document.getElementById('next-slide-btn');
+        const slideCounter = document.getElementById('slide-counter');
+        
+        // 抓取所有被標記為 "slide" 的元素
+        const slides = Array.from(document.querySelectorAll('.slide'));
+        let currentSlideIndex = 0;
+        let isPresentationMode = false;
+        let originalScrollPosition = 0; // 儲存原始滾動位置
+
+        function showSlide(index) {
+            // 隱藏所有投影片的 active 狀態
+            slides.forEach((slide) => {
+                slide.classList.remove('active');
+            });
+
+            // 顯示當前的投影片
+            const currentSlide = slides[index];
+            if (currentSlide) {
+                currentSlide.classList.add('active');
+                currentSlide.scrollTop = 0; // 確保長投影片從頂部開始顯示
+            }
+
+            // 更新頁碼
+            slideCounter.textContent = `第 ${index + 1} / ${slides.length} 頁`;
+
+            // 更新按鈕的可點擊狀態
+            prevBtn.disabled = (index === 0);
+            nextBtn.disabled = (index === slides.length - 1);
+        }
+
+        function enterPresentationMode() {
+            isPresentationMode = true;
+            originalScrollPosition = window.pageYOffset; // 記錄進入前的位置
+            body.classList.add('presentation-mode');
+            toggleBtn.textContent = '返回講義模式';
+            currentSlideIndex = 0; 
+            showSlide(currentSlideIndex);
+            window.scrollTo(0, 0); // 確保簡報模式從頂部開始
+        }
+
+        function exitPresentationMode() {
+            isPresentationMode = false;
+            body.classList.remove('presentation-mode');
+            toggleBtn.textContent = '切換簡報模式';
+            
+            // 移除所有投影片的 active 狀態，使其恢復 CSS 預設顯示
+            slides.forEach(slide => slide.classList.remove('active'));
+            
+            // 恢復到退出前的位置
+            window.scrollTo(0, originalScrollPosition);
+        }
+
+        function toggleMode() {
+            if (isPresentationMode) {
+                exitPresentationMode();
+            } else {
+                enterPresentationMode();
+            }
+        }
+
+        function handleKeydown(e) {
+            // 如果不是簡報模式，就忽略任何按鍵
+            if (!isPresentationMode) return;
+
+            if (e.key === 'ArrowRight' || e.key === ' ') { // 右方向鍵或空白鍵
+                e.preventDefault(); // 防止空白鍵造成頁面滾動
+                if (currentSlideIndex < slides.length - 1) {
+                    currentSlideIndex++;
+                    showSlide(currentSlideIndex);
+                }
+            } else if (e.key === 'ArrowLeft') { // 左方向鍵
+                e.preventDefault();
+                if (currentSlideIndex > 0) {
+                    currentSlideIndex--;
+                    showSlide(currentSlideIndex);
+                }
+            } else if (e.key === 'Escape') { // Esc 鍵
+                exitPresentationMode();
+            }
+        }
+
+        // 註冊事件監聽器
+        toggleBtn.addEventListener('click', toggleMode);
+        nextBtn.addEventListener('click', () => {
+            if (currentSlideIndex < slides.length - 1) {
+                currentSlideIndex++;
+                showSlide(currentSlideIndex);
+            }
+        });
+        prevBtn.addEventListener('click', () => {
+             if (currentSlideIndex > 0) {
+                currentSlideIndex--;
+                showSlide(currentSlideIndex);
+            }
+        });
+        document.addEventListener('keydown', handleKeydown);
+    });
+    </script>
 </body>
 </html>

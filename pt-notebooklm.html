@@ -5,13 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NotebookLM 實作工作坊講義</title>
     <style>
-        body {
+         body {
             font-family: 'Segoe UI', 'Microsoft JhengHei', '微軟正黑體', sans-serif;
             line-height: 1.9;
             color: #212529;
             background-color: #f8f9fa;
             margin: 0;
             padding: 20px;
+            transition: background-color 0.3s ease;
         }
         .container {
             max-width: 960px;
@@ -20,14 +21,24 @@
             border: 1px solid #dee2e6;
             border-radius: 8px;
             padding: 20px 40px;
+            transition: all 0.3s ease;
         }
         header {
             background-color: #007bff;
             color: white;
-            padding: 30px;
+            padding: 20px 30px;
             text-align: center;
             border-radius: 8px;
             margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        /* --- 修改點：讓標題群組內的文字靠左 --- */
+        .header-title-group {
+            text-align: left;
         }
         header h1 {
             margin: 0;
@@ -52,6 +63,7 @@
             border: 1px solid #ced4da;
             border-radius: 8px;
             overflow: hidden;
+            background-color: #fff;
         }
         .step-header {
             background-color: #e9ecef;
@@ -95,7 +107,7 @@
             border-radius: 5px;
         }
         .screen-ref::before {
-            content: '【畫面參考】 ';
+            content: '【神之迷音】 ';
             font-weight: 700;
         }
         .important-note {
@@ -112,15 +124,13 @@
             color: #6c757d;
             font-size: 1em;
         }
-        
-        /* 吉祥物樣式 */
         #mascot {
             position: fixed;
             bottom: 20px;
             right: 20px;
             width: 120px;
             z-index: 1000;
-            transition: transform 0.3s ease-in-out;
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease;
             cursor: pointer;
         }
         #mascot:hover {
@@ -131,14 +141,132 @@
             height: auto;
             display: block;
         }
-        
-        /* 響應式：小螢幕時吉祥物變小 */
         @media (max-width: 768px) {
+            header {
+                justify-content: center;
+            }
+            .header-title-group {
+                text-align: center;
+            }
             #mascot {
                 width: 90px;
                 bottom: 15px;
                 right: 15px;
             }
+        }
+
+        /* --- 簡報模式相關樣式 --- */
+        #toggle-mode-btn {
+            background-color: #fff;
+            color: #007bff;
+            border: 2px solid #fff;
+            padding: 10px 20px;
+            font-size: 1em;
+            font-weight: 700;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            white-space: nowrap;
+        }
+        #toggle-mode-btn:hover {
+            background-color: #e3f2fd;
+            transform: scale(1.05);
+        }
+        #presentation-controls {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px 0;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        #presentation-controls button {
+            background: none;
+            border: 2px solid white;
+            color: white;
+            font-size: 1.2em;
+            padding: 8px 18px;
+            margin: 0 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        #presentation-controls button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        #slide-counter {
+            font-size: 1.2em;
+            min-width: 100px;
+            text-align: center;
+        }
+        .slide {
+             /* 在講義模式下沒有特殊樣式 */
+        }
+
+        body.presentation-mode {
+            background-color: #212529;
+            overflow: hidden;
+        }
+        body.presentation-mode .container {
+            max-width: 100%;
+            width: 100%;
+            height: 100vh;
+            padding: 0;
+            margin: 0;
+            border: none;
+            border-radius: 0;
+            background-color: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        body.presentation-mode header,
+        body.presentation-mode footer,
+        body.presentation-mode #mascot {
+            display: none;
+        }
+        body.presentation-mode #presentation-controls {
+            opacity: 1;
+            visibility: visible;
+        }
+        body.presentation-mode .slide {
+            display: none;
+        }
+        body.presentation-mode .slide.active {
+            display: block;
+            width: 90%;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-sizing: border-box;
+            max-height: calc(100vh - 120px); 
+            overflow-y: auto;
+        }
+        body.presentation-mode .section-title {
+            font-size: 3em;
+            text-align: center;
+            border-bottom-width: 5px;
+        }
+        body.presentation-mode .step-box {
+            border: none;
+            box-shadow: none;
+            margin-bottom: 0;
+        }
+        body.presentation-mode .intro-block p {
+            font-size: 1.4em;
         }
     </style>
 </head>
@@ -146,23 +274,25 @@
 
     <div class="container">
         <header>
-            <h1>NotebookLM 實作工作坊講義</h1>
-            <p>以「防範金融詐騙」為例</p>
+            <div class="header-title-group">
+                <h1>NotebookLM 實作工作坊講義</h1>
+                <p>以「防範金融詐騙」為例</p>
+            </div>
+            <button id="toggle-mode-btn">切換簡報模式</button>
         </header>
-
-        <!-- ==================== 新增的介紹區塊 ==================== -->
-        <h2 class="section-title">課程介紹：何時用 NotebookLM？</h2>
-        <div class="important-note">
+        
+        <h2 class="section-title slide">課程介紹：何時用 NotebookLM？</h2>
+        <div class="important-note slide">
             <p><strong>【關鍵心法】</strong></p>
             <ul>
-                <li>當您需要「<strong>整理分析現有資料</strong>」時，請用 <strong>NotebookLM</strong>。<br><em>（例如：分析您上傳的3篇論文、整理您的PDF講義重點）</em></li>
+                <li>當您需要「<strong>整理分析現有資料</strong>」時，請用 <strong>NotebookLM</strong>。<br><em>（例如：分析您上傳的3篇論文、整理您的PDF講義重點、為您的會議紀錄生成摘要）</em></li>
                 <li>當您需要「<strong>從零開始創意發想</strong>」時，請用 <strong>Gemini</strong>。<br><em>（例如：寫一首詩、設計一個新活動、畫一張圖、分析一張照片）</em></li>
             </ul>
         </div>
 
-        <!-- ==================== 步驟一 ==================== -->
-        <h2 class="section-title">步驟一：前置準備</h2>
-        <div class="step-box">
+
+        <h2 class="section-title slide">步驟一：前置準備</h2>
+        <div class="step-box slide">
             <div class="step-header">動作：複製本次課程使用的網址</div>
             <div class="step-content">
                 <span class="action-title">請學員複製下方程式碼框中的網址：</span>
@@ -173,9 +303,8 @@
             </div>
         </div>
 
-        <!-- ==================== 步驟二 ==================== -->
-        <h2 class="section-title">步驟二：建立 NotebookLM 筆記本</h2>
-        <div class="step-box">
+        <h2 class="section-title slide">步驟二：建立 NotebookLM 筆記本</h2>
+        <div class="step-box slide">
             <div class="step-header">動作 2.1：開啟並登入 NotebookLM</div>
             <div class="step-content">
                 <span class="action-title">1. 開啟網站</span>
@@ -188,50 +317,41 @@
                 </div>
             </div>
         </div>
-        <div class="step-box">
+        <div class="step-box slide">
             <div class="step-header">動作 2.2：建立新的筆記本</div>
             <div class="step-content">
                 <span class="action-title">1. 點擊「新增筆記本」按鈕</span>
                 <div class="instruction">
                     請找到畫面左上角，點擊藍色的「<b>+ 新增筆記本</b>」按鈕。
                 </div>
-                <div class="screen-ref">畫面上會跳出一個小視窗，要求您輸入筆記本的名稱。</div>
-
                 <span class="action-title">2. 輸入筆記本名稱</span>
                 <div class="instruction">
                     請在輸入框中，輸入本次課程的專案名稱：<code>防詐騙教材實作</code>
                 </div>
-
                 <span class="action-title">3. 按下「確認」</span>
                 <div class="instruction">
                     輸入完畢後，請點擊小視窗右下角的「<b>確認</b>」按鈕。
                 </div>
-                <div class="screen-ref">您將會進入一個空白的筆記本畫面，左邊是「來源」，右邊是「筆記」。</div>
+                <div class="screen-ref">您將會進入一個空白的筆記本畫面，左邊是「來源」，右邊是「筆記板 (Noteboard)」。</div>
             </div>
         </div>
 
-        <!-- ==================== 步驟三 ==================== -->
-        <h2 class="section-title">步驟三：匯入「防詐騙專區」資料</h2>
-        <div class="step-box">
+        <h2 class="section-title slide">步驟三：匯入「防詐騙專區」資料</h2>
+        <div class="step-box slide">
             <div class="step-header">動作：將網址加入 NotebookLM</div>
             <div class="step-content">
                 <span class="action-title">1. 點擊「新增來源」</span>
                 <div class="instruction">
                     請看畫面左下方的「<b>來源</b>」區塊，點擊裡面的「<b>+ 新增來源</b>」按鈕。
                 </div>
-                <div class="screen-ref">畫面上會出現一個選單，包含「Google 雲端硬碟」、「PDF」等選項。</div>
-
                 <span class="action-title">2. 選擇「網站連結」</span>
                 <div class="instruction">
                     請在跳出的選單中，點擊「<b>網站連結</b>」這個選項。
                 </div>
-                <div class="screen-ref">畫面會出現一個輸入框，讓您貼上網址。</div>
-
                 <span class="action-title">3. 貼上網址</span>
                 <div class="instruction">
                     請在輸入框中按「滑鼠右鍵」，選擇「<b>貼上</b>」（或使用鍵盤 `Ctrl + V`），將剛才複製的網址貼進去。
                 </div>
-
                 <span class="action-title">4. 按下「插入」</span>
                 <div class="instruction">
                     貼上網址後，請點擊右邊的「<b>插入</b>」按鈕。
@@ -240,10 +360,9 @@
             </div>
         </div>
 
-        <!-- ==================== 步驟四 ==================== -->
-        <h2 class="section-title">步驟四：核心功能實作</h2>
+        <h2 class="section-title slide">步驟四：核心功能實作</h2>
         
-        <div class="step-box">
+        <div class="step-box slide">
             <div class="step-header">實作 4.1：查看自動摘要</div>
             <div class="step-content">
                 <span class="action-title">操作指令：</span>
@@ -254,7 +373,7 @@
             </div>
         </div>
 
-        <div class="step-box">
+        <div class="step-box slide">
             <div class="step-header">實作 4.2：提問與來源查證</div>
             <div class="step-content">
                 <span class="action-title">1. 提出問題</span>
@@ -269,26 +388,26 @@
                 <div class="instruction">
                     請查看 AI 的回答，您會看到句子後面有藍色的數字，如 <code>[1]</code>。請用滑鼠點擊其中一個數字。
                 </div>
-                <div class="screen-ref">點擊後，右邊的原始文章會立刻跳到對應的段落並用黃色標示出來。這就是來源查證功能。</div>
+                <div class="screen-ref">點擊後，右邊的原始文章會立刻跳到對應的段落並用黃色標示出來。這就是來源查證功能，確保內容有所本。</div>
             </div>
         </div>
 
-        <div class="step-box">
-            <div class="step-header">實作 4.3：釘選筆記 (建立教案)</div>
+        <div class="step-box slide">
+            <div class="step-header">實作 4.3：釘選到筆記板 (Noteboard)</div>
             <div class="step-content">
                 <span class="action-title">1. 釘選 AI 的回答</span>
                 <div class="instruction">
                     請在剛剛 AI 的回答區塊右上角，找到一個「<b>圖釘</b>」圖示，並點擊它。
                 </div>
-                <div class="screen-ref">該則回答會被完整複製到最右邊的「筆記」區塊。</div>
+                <div class="screen-ref">該則回答會被完整複製到最右邊的「筆記板」區塊。筆記板不只是儲存，更是您草擬教案、整理思緒的工作區。</div>
                 <span class="action-title">2. 新增自己的筆記</span>
                 <div class="instruction">
-                    請在最右邊的「筆記」區塊下方，找到並點擊「<b>+ 新增記事</b>」按鈕，然後輸入您自己的教學想法，例如：「這部分可以當作分組討論題目」。
+                    請在最右邊的「筆記板」區塊下方，找到並點擊「<b>+ 新增記事</b>」按鈕，然後輸入您自己的教學想法，例如：「這部分可以當作分組討論題目」。
                 </div>
             </div>
         </div>
 
-        <div class="step-box">
+        <div class="step-box slide">
             <div class="step-header">實作 4.4：生成心智圖</div>
             <div class="step-content">
                 <span class="action-title">操作指令：</span>
@@ -302,9 +421,39 @@
                 <div class="screen-ref">AI 會在對話區生成一張可以互動的心智圖。</div>
             </div>
         </div>
+        
+        <div class="step-box slide">
+            <div class="step-header">實作 4.5：生成常見問答 (FAQ)</div>
+            <div class="step-content">
+                <span class="action-title">操作指令：</span>
+                <div class="instruction">
+                    FAQ 是很好的教學素材。請在對話框輸入以下指令，讓 AI 幫您生成：
+                </div>
+                <div class="copy-box">根據我提供的資料，為「金融防詐騙」這個主題生成一份常見問答集 (FAQ)。</div>
+                <div class="instruction">
+                    貼上後，按下「<b>傳送</b>」。
+                </div>
+                <div class="screen-ref">AI 會生成一份問答格式的內容，非常適合放在課程講義或網站上。您可以將它釘選到筆記板備用。</div>
+            </div>
+        </div>
+        
+        <div class="step-box slide">
+            <div class="step-header">實作 4.6：一鍵生成學習指南</div>
+            <div class="step-content">
+                <span class="action-title">操作指令：</span>
+                <div class="instruction">
+                    NotebookLM 甚至能幫您規劃學習路徑。請在對話框輸入以下指令：
+                </div>
+                <div class="copy-box">為我提供的資料建立一份學習指南。</div>
+                <div class="instruction">
+                    貼上後，按下「<b>傳送</b>」。
+                </div>
+                <div class="screen-ref">AI 會自動分析資料，產出包含「摘要」、「關鍵詞彙」和「開放式評量問題」的完整學習指南，是備課的一大利器！</div>
+            </div>
+        </div>
 
-        <div class="step-box">
-            <div class="step-header">實作 4.5：製作語音檔</div>
+        <div class="step-box slide">
+            <div class="step-header">實作 4.7：製作語音檔</div>
             <div class="step-content">
                 <span class="action-title">1. 點擊「建立語音總覽」</span>
                 <div class="instruction">
@@ -318,18 +467,18 @@
                 <div class="instruction">
                     輸入完畢後，按下「<b>產生</b>」。
                 </div>
-                <div class="screen-ref">請稍待片刻，AI 就會生成一段可播放的音檔。</div>
+                <div class="screen-ref">請稍待片刻，AI 就會生成一段可播放的音檔，適合用於製作有聲教材。</div>
             </div>
         </div>
-        
-        <!-- ==================== 實作練習 ==================== -->
-        <h2 class="section-title">綜合實作練習：設計一堂「防範釣魚詐騙」課程</h2>
-        <div style="background-color: #fffbe6; border: 2px solid #ffc107; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+
+             
+        <h2 class="section-title slide">綜合實作練習：設計一堂「防範釣魚詐騙」課程</h2>
+        <div class="slide" style="background-color: #fffbe6; border: 2px solid #ffc107; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
             <p style="font-size: 1.2em; font-weight: 600; color: #856404;">【任務說明】</p>
-            <p>現在，請老師們化身為一位課程設計師。您的任務是利用 NotebookLM，從無到有設計出一份關於「如何防範釣魚網站與簡訊詐騙」的簡易教案。您需要完成以下 <strong>五個任務</strong>，並將所有成果「釘選」到右邊的筆記板上。</p>
+            <p class="intro-block">現在，請老師們化身為一位課程設計師。您的任務是利用 NotebookLM，從無到有設計出一份關於「如何防範釣魚網站與簡訊詐騙」的簡易教案。您需要完成以下 <strong>五個任務</strong>，並將所有成果「釘選」到右邊的筆記板 (Noteboard) 上。</p>
         </div>
 
-        <div class="step-box">
+        <div class="step-box slide">
             <div class="step-header">任務一：新增第二份資料來源</div>
             <div class="step-content">
                 <span class="action-title">1. 複製新的網址</span>
@@ -337,7 +486,6 @@
                     這次我們需要更專門的資料。請複製以下這篇關於「釣魚信件」的文章網址：
                 </div>
                 <div class="copy-box">https://www.tsg.com.tw/blog-detail10-299-0-phishing.htm</div>
-
                 <span class="action-title">2. 將新網址加入來源</span>
                 <div class="instruction">
                     請重複【步驟三】的動作，點擊「<b>+ 新增來源</b>」→「<b>網站連結</b>」，將這個新網址加入到您的筆記本中。
@@ -346,33 +494,33 @@
             </div>
         </div>
 
-        <div class="step-box">
-            <div class="step-header">任務二：比較並整理重點</div>
+        <div class="step-box slide">
+            <div class="step-header">任務二：生成比較表格並整理重點</div>
             <div class="step-content">
                 <span class="action-title">1. 勾選所有來源</span>
                 <div class="instruction">
                     請在左邊的「來源」區塊，將兩個來源項目旁邊的「<b>核取方塊 (小框框)</b>」都打勾。這表示您要 AI 同時參考這兩份資料。
                 </div>
-                <span class="action-title">2. 提出整合性問題</span>
+                <span class="action-title">2. 提出整合性問題 (升級版)</span>
                 <div class="instruction">
-                    請在下方的對話框中，提出以下問題，讓 AI 幫您整理一份綜合性的筆記：
+                    請在下方的對話框中，提出以下問題，讓 AI 幫您整理一份結構化的比較表格：
                 </div>
-                <div class="copy-box">綜合我提供的兩份資料，請用點列式摘要出「釣魚網站」、「釣魚簡訊」和「釣魚郵件」的共通特徵。</div>
+                <div class="copy-box">綜合我提供的兩份資料，請製作一張比較表格，比較「釣魚網站」、「釣魚簡訊」和「釣魚郵件」的異同，欄位需包含：管道、常見特徵、防範方法。</div>
                 <span class="action-title">3. 釘選成果</span>
                 <div class="instruction">
-                    請將 AI 生成的摘要成果，用「<b>圖釘</b>」功能釘選到右邊的筆記板。
+                    請將 AI 生成的表格，用「<b>圖釘</b>」功能釘選到右邊的筆記板。
                 </div>
             </div>
         </div>
 
-        <div class="step-box">
+        <div class="step-box slide">
             <div class="step-header">任務三：設計課堂評量題目</div>
             <div class="step-content">
                 <span class="action-title">1. 生成選擇題</span>
                 <div class="instruction">
                     請向 AI 下達以下指令，為您的課程設計評量題目：
                 </div>
-                <div class="copy-box">根據所有資料，設計 3 道關於防範釣魚詐騙的選擇題，並附上正確答案與詳解。</div>
+                <div class="copy-box">根據所有資料，設計 3 道關於防範釣魚詐騙的情境式選擇題，並附上正確答案與詳解。</div>
                  <span class="action-title">2. 釘選成果</span>
                 <div class="instruction">
                     請將生成的題目與答案，用「<b>圖釘</b>」功能釘選到右邊的筆記板。
@@ -380,7 +528,7 @@
             </div>
         </div>
 
-        <div class="step-box">
+        <div class="step-box slide">
             <div class="step-header">任務四：創建視覺化學習輔助工具</div>
             <div class="step-content">
                 <span class="action-title">1. 建立「處理流程圖」</span>
@@ -395,23 +543,23 @@
             </div>
         </div>
 
-        <div class="step-box">
-            <div class="step-header">任務五：整理與命名筆記</div>
+        <div class="step-box slide">
+            <div class="step-header">任務五：整理與命名筆記板</div>
             <div class="step-content">
-                <span class="action-title">1. 查看筆記板</span>
+                <span class="action-title">1. 查看筆記板 (Noteboard)</span>
                 <div class="instruction">
-                    現在，請查看您最右邊的筆記板。上面應該已經釘選了「<b>共通特徵摘要</b>」、「<b>3 道選擇題</b>」和「<b>處理流程圖</b>」。
+                    現在，請查看您最右邊的筆記板。上面應該已經釘選了「<b>比較表格</b>」、「<b>3 道選擇題</b>」和「<b>處理流程圖</b>」。
                 </div>
                 <span class="action-title">2. 重新命名釘選的筆記</span>
                 <div class="instruction">
-                    用滑鼠點擊每個釘選筆記的標題（例如 "摘要"），您可以為它重新命名，讓教案更清晰。請試著將它們分別改名為：
+                    用滑鼠點擊每個釘選筆記的標題（例如 "表格"），您可以為它重新命名，讓教案更清晰。請試著將它們分別改名為：
                     <ul>
-                        <li><code>釣魚詐騙共通點</code></li>
-                        <li><code>課堂小測驗</code></li>
-                        <li><code>學生應對SOP</code></li>
+                        <li><code>三種釣魚詐騙比較表</code></li>
+                        <li><code>課堂情境小測驗</code></li>
+                        <li><code>學生應對SOP流程圖</code></li>
                     </ul>
                 </div>
-                <div class="screen-ref">恭喜您！您已經成功利用 NotebookLM，完成了一份結構完整的數位教案草稿！</div>
+                <div class="screen-ref">恭喜您！您已經成功利用 NotebookLM 的最新功能，完成了一份結構完整的數位教案草稿！</div>
             </div>
         </div>
 
@@ -420,10 +568,108 @@
         </footer>
     </div>
     
-    <!-- 吉祥物 HTML 元素 -->
     <div id="mascot">
-        <img src="image/LiyuChill.svg" alt="吉祥物">
+        <img src="https://www.gstatic.com/lamda/images/mascot_squint_2x_3a75e13d18915b223c40015a95d66d2d.gif" alt="NotebookLM 吉祥物">
     </div>
 
+    <div id="presentation-controls">
+        <button id="prev-slide-btn">‹ 上一張</button>
+        <span id="slide-counter"></span>
+        <button id="next-slide-btn">下一張 ›</button>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const body = document.body;
+        const toggleBtn = document.getElementById('toggle-mode-btn');
+        const prevBtn = document.getElementById('prev-slide-btn');
+        const nextBtn = document.getElementById('next-slide-btn');
+        const slideCounter = document.getElementById('slide-counter');
+        
+        const slides = Array.from(document.querySelectorAll('.slide'));
+        let currentSlideIndex = 0;
+        let isPresentationMode = false;
+        let originalScrollPosition = 0;
+
+        function showSlide(index) {
+            slides.forEach((slide) => {
+                slide.classList.remove('active');
+            });
+
+            const currentSlide = slides[index];
+            if (currentSlide) {
+                currentSlide.classList.add('active');
+                currentSlide.scrollTop = 0;
+            }
+
+            slideCounter.textContent = `第 ${index + 1} / ${slides.length} 頁`;
+            prevBtn.disabled = (index === 0);
+            nextBtn.disabled = (index === slides.length - 1);
+        }
+
+        function enterPresentationMode() {
+            isPresentationMode = true;
+            originalScrollPosition = window.pageYOffset;
+            body.classList.add('presentation-mode');
+            toggleBtn.textContent = '返回講義模式';
+            currentSlideIndex = 0; 
+            showSlide(currentSlideIndex);
+            window.scrollTo(0, 0);
+        }
+
+        function exitPresentationMode() {
+            isPresentationMode = false;
+            body.classList.remove('presentation-mode');
+            toggleBtn.textContent = '切換簡報模式';
+            
+            slides.forEach(slide => slide.classList.remove('active'));
+            
+            window.scrollTo(0, originalScrollPosition);
+        }
+
+        function toggleMode() {
+            if (isPresentationMode) {
+                exitPresentationMode();
+            } else {
+                enterPresentationMode();
+            }
+        }
+
+        function handleKeydown(e) {
+            if (!isPresentationMode) return;
+
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                if (currentSlideIndex < slides.length - 1) {
+                    currentSlideIndex++;
+                    showSlide(currentSlideIndex);
+                }
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                if (currentSlideIndex > 0) {
+                    currentSlideIndex--;
+                    showSlide(currentSlideIndex);
+                }
+            } else if (e.key === 'Escape') {
+                exitPresentationMode();
+            }
+        }
+
+        toggleBtn.addEventListener('click', toggleMode);
+        nextBtn.addEventListener('click', () => {
+            if (currentSlideIndex < slides.length - 1) {
+                currentSlideIndex++;
+                showSlide(currentSlideIndex);
+            }
+        });
+        prevBtn.addEventListener('click', () => {
+             if (currentSlideIndex > 0) {
+                currentSlideIndex--;
+                showSlide(currentSlideIndex);
+            }
+        });
+        document.addEventListener('keydown', handleKeydown);
+    });
+    </script>
 </body>
 </html>
