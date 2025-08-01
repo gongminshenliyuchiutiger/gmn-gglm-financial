@@ -3,186 +3,271 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gemini 實作工作坊講義</title>
+    <title>Gemini 實作工作坊講義 - 分享人：新北市立雙溪高中 邱俐瑜老師</title>
     
     <!-- 引入 Font Awesome 圖示庫 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     
     <style>
+        /* --- 吉祥物彈出文字樣式 --- */
+#mascot-text {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    padding: 20px 30px;
+    border-radius: 15px;
+    font-size: 2.5em;
+    font-weight: bold;
+    z-index: 9999;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.5);
+    text-shadow: 0 0 10px #ffc107;
+    white-space: nowrap;
+    animation: fadeInOut 2.5s ease-in-out forwards;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+    20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+}
+/* --- 全局樣式優化 --- */
+        :root {
+            --primary-purple: #4A148C;
+            --secondary-purple: #6A1B9A;
+            --light-purple: #CE93D8;
+            --bg-purple: #f3e5f5;
+            --primary-text: #212529;
+            --secondary-text: #495057;
+            --light-bg: #f8f9fa;
+            --white-bg: #ffffff;
+            --border-color: #dee2e6;
+            --accent-yellow: #fffde7;
+            --accent-yellow-border: #fdd835;
+            --accent-blue: #e3f2fd;
+            --accent-blue-border: #90caf9;
+            --success-green: #28a745;
+        }
+
         body {
-            font-family: 'Segoe UI', 'Microsoft JhengHei', '微軟正黑體', sans-serif;
-            line-height: 1.9;
-            color: #212529;
-            background-color: #f8f9fa;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', '微軟正黑體', sans-serif;
+            line-height: 1.8;
+            color: var(--primary-text);
+            background-color: var(--light-bg);
             margin: 0;
             padding: 20px;
             transition: background-color 0.3s ease;
         }
+
         .container {
             max-width: 960px;
             margin: 0 auto;
-            background-color: #ffffff;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 20px 40px;
+            background-color: var(--white-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 30px 50px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
             transition: all 0.3s ease;
         }
+
         header {
-            background-color: #4A148C;
+            background: linear-gradient(135deg, var(--primary-purple), var(--secondary-purple));
             color: white;
-            padding: 20px 30px;
+            padding: 30px 40px;
             text-align: center;
             border-radius: 8px;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 20px;
         }
+
         header .title-group {
             text-align: left;
         }
+
         header h1 {
             margin: 0;
-            font-size: 2.4em;
+            font-size: 2.5em;
             font-weight: 700;
         }
-        header p {
+
+        header .subtitle {
             font-size: 1.3em;
             opacity: 0.9;
             margin-top: 5px;
+            margin-bottom: 0;
         }
+
+        header .presenter {
+            font-size: 1.1em;
+            opacity: 0.85;
+            margin-top: 15px;
+            font-weight: 400;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            padding-top: 15px;
+        }
+
         .section-title {
-            font-size: 2.2em;
-            color: #6A1B9A;
-            border-bottom: 4px solid #CE93D8;
-            padding-bottom: 10px;
-            margin-top: 40px;
-            margin-bottom: 25px;
+            font-size: 2.3em;
+            color: var(--secondary-purple);
+            border-bottom: 4px solid var(--light-purple);
+            padding-bottom: 15px;
+            margin-top: 50px;
+            margin-bottom: 30px;
         }
+
         .step-box {
-            margin-bottom: 25px;
-            border: 1px solid #ced4da;
-            border-radius: 8px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
             overflow: hidden;
-            background-color: #fff;
+            background-color: var(--white-bg);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: box-shadow 0.3s ease;
         }
+        .step-box:hover {
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
         .step-header {
-            background-color: #e9ecef;
-            padding: 12px 20px;
+            background-color: #f7f9fc;
+            padding: 15px 25px;
             font-weight: 700;
             font-size: 1.4em;
-            color: #495057;
+            color: var(--secondary-text);
+            border-bottom: 1px solid var(--border-color);
         }
+
         .step-content {
-            padding: 20px;
+            padding: 25px;
         }
+
         .action-title {
             font-weight: 600;
-            font-size: 1.1em;
+            font-size: 1.15em;
             color: #343a40;
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
+
         .instruction {
             margin-left: 20px;
-            margin-bottom: 15px;
-            padding-left: 15px;
-            border-left: 3px solid #8E24AA;
+            margin-bottom: 20px;
+            padding-left: 20px;
+            border-left: 3px solid var(--secondary-purple);
         }
+        /* 微調圖示與文字間距 */
+        .instruction .fa-solid {
+            margin-left: 0.25em;
+            color: var(--secondary-text);
+        }
+
         .copy-container {
             position: relative;
             margin: 10px 0;
         }
+
         .copy-box {
-            background-color: #f3e5f5;
-            border: 1px solid #ab47bc;
-            padding: 15px;
-            border-radius: 5px;
+            background-color: var(--bg-purple);
+            border: 1px solid #c3aed4;
+            padding: 15px 20px;
+            border-radius: 6px;
             font-family: "Courier New", Courier, monospace;
             font-size: 1.1em;
             word-wrap: break-word;
-            padding-right: 60px; /* 留給按鈕的空間可以少一點 */
+            line-height: 1.6;
+            padding-right: 50px; 
         }
         
-        /* 【修改】簡約輕巧的複製按鈕樣式 */
         .copy-btn {
             position: absolute;
             top: 50%;
-            right: 8px; /* 離邊緣近一點 */
+            right: 8px;
             transform: translateY(-50%);
-            
-            /* 外觀設定 */
-            background-color: transparent; /* 預設透明背景 */
-            color: #888; /* 預設圖示為灰色 */
+            background-color: transparent;
+            color: #888;
             border: none;
-            border-radius: 50%; /* 圓形按鈕區域 */
-            width: 36px; /* 固定寬高 */
+            border-radius: 50%;
+            width: 36px;
             height: 36px;
             padding: 0;
-            
-            /* Flexbox置中圖示 */
             display: flex;
             align-items: center;
             justify-content: center;
-
             cursor: pointer;
             transition: background-color 0.2s, color 0.2s, transform 0.2s;
         }
         .copy-btn:hover {
-            background-color: #e9ecef; /* 滑鼠懸停時顯示淺灰色背景 */
-            color: #333; /* 圖示變深色 */
+            background-color: #e9ecef;
+            color: #333;
+            transform: translateY(-50%) scale(1.1);
         }
         .copy-btn i {
-            font-size: 1.1em; /* 圖示大小 */
+            font-size: 1.1em;
             transition: transform 0.2s ease-out;
         }
-        
-        /* 複製成功後的樣式 */
         .copy-btn.copied {
-            color: #28a745; /* 成功時變綠色 */
+            color: var(--success-green);
         }
         .copy-btn.copied i {
-            transform: scale(1.2); /* 成功時圖示稍微放大 */
+            transform: scale(1.2);
         }
-        /* --- */
 
-        .screen-ref {
-            background-color: #e3f2fd;
-            border: 1px solid #90caf9;
-            color: #1565c0;
-            padding: 10px 15px;
+        .screen-ref, .important-note {
+            padding: 15px 20px;
             margin-top: 10px;
-            border-radius: 5px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border: 1px solid;
+        }
+        .screen-ref {
+            background-color: var(--accent-blue);
+            border-color: var(--accent-blue-border);
+            color: #1565c0;
         }
         .screen-ref::before {
-            content: '【神之迷音】 ';
-            font-weight: 700;
+            font-family: "Font Awesome 6 Free";
+            content: '\f0eb ';
+            font-weight: 900;
+            margin-right: 8px;
         }
         .important-note {
-            background-color: #fffde7;
-            border: 1px solid #fdd835;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
+            background-color: var(--accent-yellow);
+            border-color: var(--accent-yellow-border);
         }
+        .important-note::before {
+             font-family: "Font Awesome 6 Free";
+            content: '\f06a ';
+            font-weight: 900;
+            margin-right: 8px;
+            color: #f57f17;
+        }
+
         .highlight-text {
             background-color: #fff9c4;
-            padding: 2px 5px;
-            border-radius: 3px;
+            padding: 2px 6px;
+            border-radius: 4px;
         }
+
         footer {
             text-align: center;
-            padding: 25px;
+            padding: 30px;
             margin-top: 40px;
             color: #6c757d;
-            font-size: 1em;
+            font-size: 0.95em;
+            border-top: 1px solid var(--border-color);
         }
+
         #mascot {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
+            bottom: 25px;
+            right: 25px;
             width: 120px;
             z-index: 1000;
             transition: transform 0.2s ease-in-out, opacity 0.3s ease;
@@ -198,14 +283,29 @@
         }
         
         @media (max-width: 768px) {
-            header { justify-content: center; }
+            body { padding: 10px; }
+            .container { padding: 20px; }
+            header { 
+                flex-direction: column;
+                text-align: center; 
+                padding: 25px;
+            }
+            header .title-group { text-align: center; }
+            header h1 { font-size: 2em; }
+            header .subtitle { font-size: 1.1em; }
+            header .presenter { font-size: 1em; }
+            .section-title { font-size: 1.9em; }
+            .step-header { font-size: 1.2em; }
             #mascot { width: 90px; bottom: 15px; right: 15px; }
         }
-        
-        /* --- 簡報模式相關樣式 --- */
+        @media (max-width: 480px) {
+            .container { padding: 15px; }
+            header h1 { font-size: 1.8em; }
+        }
+
         #toggle-mode-btn {
             background-color: #fff;
-            color: #4A148C;
+            color: var(--primary-purple);
             border: 2px solid #fff;
             padding: 10px 20px;
             font-size: 1em;
@@ -216,13 +316,13 @@
             white-space: nowrap;
         }
         #toggle-mode-btn:hover {
-            background-color: #f3e5f5;
+            background-color: var(--bg-purple);
             transform: scale(1.05);
         }
         #presentation-controls {
             position: fixed;
             bottom: 0; left: 0; width: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
+            background-color: rgba(0, 0, 0, 0.75);
             color: white;
             display: flex;
             justify-content: center;
@@ -235,7 +335,10 @@
         #presentation-controls button {
             background: none; border: 2px solid white; color: white;
             font-size: 1.2em; padding: 8px 18px; margin: 0 20px;
-            border-radius: 8px; cursor: pointer; transition: opacity 0.2s;
+            border-radius: 8px; cursor: pointer; transition: background-color 0.2s, opacity 0.2s;
+        }
+        #presentation-controls button:hover:not(:disabled) {
+             background-color: rgba(255, 255, 255, 0.2);
         }
         #presentation-controls button:disabled {
             opacity: 0.4; cursor: not-allowed;
@@ -264,7 +367,7 @@
         body.presentation-mode .slide.active {
             display: block; width: 90%; max-width: 1100px;
             margin: 0 auto; padding: 50px;
-            background-color: #ffffff; border-radius: 12px;
+            background-color: var(--white-bg); border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             box-sizing: border-box; max-height: calc(100vh - 120px); 
             overflow-y: auto;
@@ -297,7 +400,8 @@
         <header>
             <div class="title-group">
                 <h1>Gemini 實作工作坊講義</h1>
-                <p>以「防範金融詐騙」為例</p>
+                <p class="subtitle">以「防範金融詐騙」為例</p>
+                <p class="presenter">分享人：新北市立雙溪高中 邱俐瑜老師</p>
             </div>
             <button id="toggle-mode-btn">切換簡報模式</button>
         </header>
@@ -333,6 +437,7 @@
             <div class="step-header">動作：認識主要操作介面</div>
             <div class="step-content">
                 <span class="action-title">1. 選擇模型 (Model)</span>
+                <!-- 【內容更新】將模型版本改回 2.5 -->
                 <div class="instruction">
                     在畫面上方，您可以看到目前的模型，例如 <b>2.5 Flash</b>。點擊它可以切換模型：
                     <ul>
@@ -341,13 +446,15 @@
                     </ul>
                 </div>
                 <span class="action-title">2. 認識輸入框功能</span>
+                <!-- 【內容更新】為所有功能加上對應圖示 -->
                 <div class="instruction">
                     在最下方的「請輸入 Gemini 提示詞」輸入框旁，有幾個實用圖示：
                     <ul>
-                        <li><b>上傳檔案{+}：</b>點擊這裡可以上傳圖片、文件等檔案讓 Gemini 分析。</li>
-                        <li><b>Deep Research：</b>針對問題進行更深入、更廣泛的網路搜尋與分析，產生詳細報告。</li>
-                        <li><b>Canvas：</b>線上白板，可以將想法視覺化、組織成心智圖或流程圖。</li>
-			            <li><b>圖像：</b>根據文字描述，創作或生成新的圖片的功能。</li>
+                        <li><b>上傳檔案 <i class="fa-solid fa-plus"></i>：</b>點擊這裡可以上傳圖片、文件等檔案讓 Gemini 分析。</li>
+                        <li><b>Deep Research <i class="fa-solid fa-magnifying-glass"></i>：</b>針對問題進行更深入、更廣泛的網路搜尋與分析，產生詳細報告。</li>
+                        <li><b>Canvas <i class="fa-solid fa-clone"></i>：</b>線上白板，可以將想法視覺化、組織成心智圖或流程圖。</li>
+			            <li><b>圖像 <i class="fa-solid fa-images"></i>：</b>根據文字描述，創作或生成新的圖片的功能。</li>
+                        <li><b>麥克風 <i class="fa-solid fa-microphone"></i>：</b>在最右側，點擊後可用語音輸入您的指令。</li>
                     </ul>
                 </div>
             </div>
@@ -381,7 +488,7 @@
                 </div>
                 <span class="action-title">2. 上傳圖片</span>
                 <div class="instruction">
-                    回到 Gemini，點擊輸入框旁邊的「<b>+</b>」圖示。選擇您剛剛下載的詐騙簡訊圖片。
+                    回到 Gemini，點擊輸入框旁邊的「<b>上傳檔案 <i class="fa-solid fa-plus"></i></b>」圖示。選擇您剛剛下載的詐騙簡訊圖片。
                 </div>
                 <span class="action-title">3. 提出分析指令</span>
                 <div class="instruction">
@@ -449,9 +556,9 @@
         </div>
 
         <h2 class="section-title slide">綜合實作練習：設計一份「遊戲點數詐騙」防範教材</h2>
-        <div class="slide" style="background-color: #e8eaf6; border: 2px solid #5c6bc0; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+        <div class="slide" style="background-color: #e8eaf6; border: 2px solid #5c6bc0; padding: 20px 30px; border-radius: 8px; margin-bottom: 30px;">
             <p style="font-size: 1.2em; font-weight: 600; color: #1a237e;">【任務說明】</p>
-            <p class="intro-block">您的任務是為學生設計一份關於「如何防範遊戲點數詐騙」的數位教材包。請運用本堂課學到的所有 Gemini 技巧，依序完成以下 <strong>四個任務</strong>。</p>
+            <p class="intro-block" style="font-size: 1.1em; line-height: 1.8;">您的任務是為學生設計一份關於「如何防範遊戲點數詐騙」的數位教材包。請運用本堂課學到的所有 Gemini 技巧，依序完成以下 <strong>四個任務</strong>。</p>
         </div>
 
         <div class="step-box slide">
@@ -473,10 +580,10 @@
             <div class="step-content">
                 <span class="action-title">操作指令：</span>
                 <div class="instruction">
-                    請 Gemini 創作一幅插圖，用於課堂簡報。
+                    點擊輸入框下方的「<b>圖像 <i class="fa-solid fa-images"></i></b>」按鈕，並輸入以下指令來創作一幅插圖。
                 </div>
                 <div class="copy-container">
-                    <div class="copy-box">請生成一張日系動漫風格的插圖，一個遊戲角色拿著盾牌，擋住了一個寫著「免費點數」的釣魚鉤。</div>
+                    <div class="copy-box">請生成一張日系動漫風格的插圖，一個可愛的遊戲角色拿著盾牌，擋住了一個寫著「免費點數」的釣魚鉤。</div>
                     <button class="copy-btn"><i class="fas fa-copy"></i></button>
                 </div>
             </div>
@@ -516,7 +623,7 @@
     </div>
     
     <div id="mascot">
-        <img src="image/LiyuChill.svg" alt="吉祥物">
+        <img src="image/LiyuChill.svg" alt="鯉魚邱老虎">
     </div>
 
     <div id="presentation-controls">
@@ -527,7 +634,7 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-        // --- 簡報模式控制 (無修改) ---
+        // --- 簡報模式控制 ---
         const body = document.body;
         const toggleBtn = document.getElementById('toggle-mode-btn');
         const controls = document.getElementById('presentation-controls');
@@ -575,10 +682,10 @@
 
         function handleKeydown(e) {
             if (!isPresentationMode) return;
-            if (e.key === 'ArrowRight' || e.key === ' ') {
+            if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
                 e.preventDefault();
                 if (currentSlideIndex < slides.length - 1) showSlide(++currentSlideIndex);
-            } else if (e.key === 'ArrowLeft') {
+            } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
                 e.preventDefault();
                 if (currentSlideIndex > 0) showSlide(--currentSlideIndex);
             } else if (e.key === 'Escape') {
@@ -591,21 +698,17 @@
         prevBtn.addEventListener('click', () => { if (currentSlideIndex > 0) showSlide(--currentSlideIndex); });
         document.addEventListener('keydown', handleKeydown);
 
-        // --- 【修改】一鍵複製功能 (圖示切換) ---
+        // --- 一鍵複製功能 ---
         const copyButtons = document.querySelectorAll('.copy-btn');
         copyButtons.forEach(button => {
             button.addEventListener('click', () => {
                 const textToCopy = button.dataset.copyText || button.previousElementSibling.innerText;
                 
                 navigator.clipboard.writeText(textToCopy).then(() => {
-                    // 暫時禁用按鈕，防止連續點擊
                     button.disabled = true;
-
-                    // 切換為 "打勾" 圖示並加上成功樣式
                     button.innerHTML = '<i class="fas fa-check"></i>';
                     button.classList.add('copied');
                     
-                    // 1.5秒後恢復原狀
                     setTimeout(() => {
                         button.innerHTML = '<i class="fas fa-copy"></i>';
                         button.classList.remove('copied');
@@ -614,52 +717,85 @@
 
                 }).catch(err => {
                     console.error('複製失敗:', err);
-                    // (可選) 增加一個失敗的視覺回饋
                     button.innerHTML = '<i class="fas fa-times"></i>';
-                    button.style.color = '#dc3545'; // 紅色
+                    button.style.color = '#dc3545';
                     setTimeout(() => {
                         button.innerHTML = '<i class="fas fa-copy"></i>';
-                        button.style.color = ''; // 清除顏色
+                        button.style.color = '';
                     }, 2000);
                 });
             });
         });
 
-        // --- 吉祥物互動特效 (無修改) ---
-        const mascot = document.getElementById('mascot');
-        if (mascot && typeof confetti === 'function') {
-            let mascotScale = 1;
-            let clickTimeout;
-            const maxScale = 2.8;
-            const scaleIncrement = 0.25;
+        // --- 吉祥物互動特效 (升級版：大到爆破) ---
+const mascot = document.getElementById('mascot');
+if (mascot && typeof confetti === 'function') {
+    let mascotScale = 1;
+    let clickTimeout;
+    const MAX_SCALE = 2.8; // 觸發爆破的最大尺寸
+    const SCALE_INCREMENT = 0.3; // 每次點擊放大的幅度
 
-            mascot.addEventListener('click', (e) => {
-                clearTimeout(clickTimeout);
-                const rect = mascot.getBoundingClientRect();
-                const origin = {
-                    x: (rect.left + rect.right) / 2 / window.innerWidth,
-                    y: (rect.top + rect.bottom) / 2 / window.innerHeight
-                };
-                mascotScale += scaleIncrement;
-                mascot.style.transform = `scale(${mascotScale})`;
+    // 顯示文字的輔助函式
+    function showMascotText() {
+        // 防止重複創建
+        if (document.getElementById('mascot-text')) return;
 
-                if (mascotScale >= maxScale) {
-                    confetti({ particleCount: 200, spread: 180, origin: origin, gravity: 0.8, startVelocity: 45 });
-                    mascot.style.opacity = '0';
-                    setTimeout(() => {
-                        mascotScale = 1; 
-                        mascot.style.transform = 'scale(1)';
-                        mascot.style.opacity = '1';
-                    }, 500);
-                } else {
-                    confetti({ particleCount: 50, spread: 70, origin: origin, gravity: 1.2 });
-                    clickTimeout = setTimeout(() => {
-                        mascotScale = 1;
-                        mascot.style.transform = `scale(1) translateY(0px)`;
-                    }, 2000);
-                }
+        const textElement = document.createElement('div');
+        textElement.id = 'mascot-text';
+        textElement.innerText = '成為AI神不再只是夢想！';
+        document.body.appendChild(textElement);
+
+        // 2.5秒後自動移除文字
+        setTimeout(() => {
+            if (document.body.contains(textElement)) {
+                document.body.removeChild(textElement);
+            }
+        }, 2500);
+    }
+
+    mascot.addEventListener('click', (e) => {
+        // 每次點擊都重置「自動縮小」的計時器
+        clearTimeout(clickTimeout);
+
+        mascotScale += SCALE_INCREMENT;
+        mascot.style.transform = `scale(${mascotScale})`;
+
+        // 判斷是否達到爆破尺寸
+        if (mascotScale >= MAX_SCALE) {
+            // 爆破！噴發更多粒子
+            confetti({
+                particleCount: 300,
+                spread: 180,
+                origin: { y: 0.6 }
             });
+
+            // 顯示文字
+            showMascotText();
+            
+            // 讓吉祥物消失，然後在短時間後重置
+            mascot.style.opacity = '0';
+            setTimeout(() => {
+                mascotScale = 1; 
+                mascot.style.transform = 'scale(1)';
+                mascot.style.opacity = '1';
+            }, 500);
+
+        } else {
+            // 普通點擊，噴發少量粒子
+            confetti({
+                particleCount: 50,
+                spread: 70,
+                origin: { y: 0.7 }
+            });
+
+            // 設定一個計時器，如果2秒內沒有再點擊，就自動縮小
+            clickTimeout = setTimeout(() => {
+                mascotScale = 1;
+                mascot.style.transform = 'scale(1)';
+            }, 2000);
         }
+    });
+}
     });
     </script>
 </body>
