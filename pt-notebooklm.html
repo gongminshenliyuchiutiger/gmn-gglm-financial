@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NotebookLM 實作工作坊講義</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
     <style>
          body {
             font-family: 'Segoe UI', 'Microsoft JhengHei', '微軟正黑體', sans-serif;
@@ -36,7 +39,6 @@
             flex-wrap: wrap;
             gap: 15px;
         }
-        /* --- 修改點：讓標題群組內的文字靠左 --- */
         .header-title-group {
             text-align: left;
         }
@@ -88,6 +90,11 @@
             padding-left: 15px;
             border-left: 3px solid #007bff;
         }
+        
+        .copy-container {
+            position: relative;
+            margin: 10px 0;
+        }
         .copy-box {
             background-color: #fff9c4;
             border: 1px solid #fbc02d;
@@ -97,7 +104,41 @@
             font-family: "Courier New", Courier, monospace;
             font-size: 1.1em;
             word-wrap: break-word;
+            padding-right: 60px;
         }
+        .copy-btn {
+            position: absolute;
+            top: 50%;
+            right: 8px;
+            transform: translateY(-50%);
+            background-color: transparent;
+            color: #888;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s, transform 0.2s;
+        }
+        .copy-btn:hover {
+            background-color: #e9ecef;
+            color: #333;
+        }
+        .copy-btn i {
+            font-size: 1.1em;
+            transition: transform 0.2s ease-out;
+        }
+        .copy-btn.copied {
+            color: #28a745;
+        }
+        .copy-btn.copied i {
+            transform: scale(1.2);
+        }
+
         .screen-ref {
             background-color: #e3f2fd;
             border: 1px solid #90caf9;
@@ -117,6 +158,15 @@
             border-radius: 5px;
             margin-bottom: 20px;
         }
+        
+        /* 【修正】新增 highlight-text 樣式 */
+        .highlight-text {
+            background-color: #fff9c4;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: "Courier New", Courier, monospace;
+        }
+
         footer {
             text-align: center;
             padding: 25px;
@@ -142,17 +192,9 @@
             display: block;
         }
         @media (max-width: 768px) {
-            header {
-                justify-content: center;
-            }
-            .header-title-group {
-                text-align: center;
-            }
-            #mascot {
-                width: 90px;
-                bottom: 15px;
-                right: 15px;
-            }
+            header { justify-content: center; }
+            .header-title-group { text-align: center; }
+            #mascot { width: 90px; bottom: 15px; right: 15px; }
         }
 
         /* --- 簡報模式相關樣式 --- */
@@ -174,103 +216,64 @@
         }
         #presentation-controls {
             position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
+            bottom: 0; left: 0; width: 100%;
             background-color: rgba(0, 0, 0, 0.7);
             color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            display: flex; justify-content: center; align-items: center;
             padding: 15px 0;
             z-index: 2000;
-            opacity: 0;
-            visibility: hidden;
+            opacity: 0; visibility: hidden;
             transition: opacity 0.3s, visibility 0.3s;
         }
         #presentation-controls button {
-            background: none;
-            border: 2px solid white;
-            color: white;
-            font-size: 1.2em;
-            padding: 8px 18px;
-            margin: 0 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: opacity 0.2s;
+            background: none; border: 2px solid white; color: white;
+            font-size: 1.2em; padding: 8px 18px; margin: 0 20px;
+            border-radius: 8px; cursor: pointer; transition: opacity 0.2s;
         }
         #presentation-controls button:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
+            opacity: 0.4; cursor: not-allowed;
         }
         #slide-counter {
-            font-size: 1.2em;
-            min-width: 100px;
-            text-align: center;
+            font-size: 1.2em; min-width: 100px; text-align: center;
         }
-        .slide {
-             /* 在講義模式下沒有特殊樣式 */
-        }
-
+        .slide { }
         body.presentation-mode {
-            background-color: #212529;
-            overflow: hidden;
+            background-color: #212529; overflow: hidden;
         }
         body.presentation-mode .container {
-            max-width: 100%;
-            width: 100%;
-            height: 100vh;
-            padding: 0;
-            margin: 0;
-            border: none;
-            border-radius: 0;
+            max-width: 100%; width: 100%; height: 100vh;
+            padding: 0; margin: 0; border: none; border-radius: 0;
             background-color: transparent;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             overflow: hidden;
         }
         body.presentation-mode header,
         body.presentation-mode footer,
-        body.presentation-mode #mascot {
-            display: none;
-        }
+        body.presentation-mode #mascot { display: none; }
         body.presentation-mode #presentation-controls {
-            opacity: 1;
-            visibility: visible;
+            opacity: 1; visibility: visible;
         }
-        body.presentation-mode .slide {
-            display: none;
-        }
+        body.presentation-mode .slide { display: none; }
         body.presentation-mode .slide.active {
-            display: block;
-            width: 90%;
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 40px;
-            background-color: #ffffff;
-            border-radius: 12px;
+            display: block; width: 90%; max-width: 1000px;
+            margin: 0 auto; padding: 40px;
+            background-color: #ffffff; border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             box-sizing: border-box;
             max-height: calc(100vh - 120px); 
             overflow-y: auto;
         }
         body.presentation-mode .section-title {
-            font-size: 3em;
-            text-align: center;
-            border-bottom-width: 5px;
+            font-size: 3em; text-align: center; border-bottom-width: 5px;
         }
         body.presentation-mode .step-box {
-            border: none;
-            box-shadow: none;
-            margin-bottom: 0;
+            border: none; box-shadow: none; margin-bottom: 0;
         }
-        body.presentation-mode .intro-block p {
-            font-size: 1.4em;
-        }
+        body.presentation-mode .intro-block p { font-size: 1.4em; }
     </style>
 </head>
 <body>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
 
     <div class="container">
         <header>
@@ -296,9 +299,12 @@
             <div class="step-header">動作：複製本次課程使用的網址</div>
             <div class="step-content">
                 <span class="action-title">請學員複製下方程式碼框中的網址：</span>
-                <div class="copy-box">https://moneywise.fsc.gov.tw/home.jsp?id=24&parentpath=0</div>
+                <div class="copy-container">
+                    <div class="copy-box">https://moneywise.fsc.gov.tw/home.jsp?id=24&parentpath=0</div>
+                    <button class="copy-btn"><i class="fas fa-copy"></i></button>
+                </div>
                 <div class="instruction">
-                    <b>操作方法：</b>用滑鼠將上面整串網址文字「反白」，然後在反白的文字上按「滑鼠右鍵」，選擇「<b>複製</b>」。或者，也可以使用鍵盤快速鍵 `Ctrl + C`。
+                    <b>操作說明：</b>點擊右側的複製圖示即可。
                 </div>
             </div>
         </div>
@@ -309,7 +315,12 @@
             <div class="step-content">
                 <span class="action-title">1. 開啟網站</span>
                 <div class="instruction">
-                    請在 Chrome 瀏覽器網址列輸入：<code>notebooklm.google.com</code>，然後按下 Enter 鍵。
+                       <div class="copy-container">
+                        
+                            請在 Chrome 瀏覽器網址列輸入：<span class="highlight-text">notebooklm.google.com</span>，然後按下 Enter 鍵。
+                        
+                        <button class="copy-btn" data-copy-text="notebooklm.google.com"><i class="fas fa-copy"></i></button>
+                    </div>
                 </div>
                 <span class="action-title">2. 登入帳號</span>
                 <div class="instruction">
@@ -324,9 +335,12 @@
                 <div class="instruction">
                     請找到畫面左上角，點擊藍色的「<b>+ 新增筆記本</b>」按鈕。
                 </div>
-                <span class="action-title">2. 輸入筆記本名稱</span>
+                 <span class="action-title">2. 輸入筆記本名稱</span>
                 <div class="instruction">
-                    請在輸入框中，輸入本次課程的專案名稱：<code>防詐騙教材實作</code>
+                    <div class="copy-container">
+                        <div class="copy-box" style="margin:0;">防詐騙教材實作</div>
+                        <button class="copy-btn"><i class="fas fa-copy"></i></button>
+                    </div>
                 </div>
                 <span class="action-title">3. 按下「確認」</span>
                 <div class="instruction">
@@ -380,7 +394,10 @@
                 <div class="instruction">
                     請移動到頁面最下方的對話輸入框，複製並貼上以下問題：
                 </div>
-                <div class="copy-box">根據提供的資料，最常見的金融詐騙手法有哪些？</div>
+                <div class="copy-container">
+                    <div class="copy-box">根據提供的資料，最常見的金融詐騙手法有哪些？</div>
+                    <button class="copy-btn"><i class="fas fa-copy"></i></button>
+                </div>
                 <div class="instruction">
                     貼上後，請點擊輸入框右邊的「<b>傳送</b>」按鈕（紙飛機圖示）。
                 </div>
@@ -414,7 +431,10 @@
                 <div class="instruction">
                     請回到最下方的對話輸入框，複製並貼上以下指令：
                 </div>
-                <div class="copy-box">將「常見的金融投資詐騙類型」做成一張心智圖，包含手法和預防方法。</div>
+                <div class="copy-container">
+                    <div class="copy-box">將「常見的金融投資詐騙類型」做成一張心智圖，包含手法和預防方法。</div>
+                    <button class="copy-btn"><i class="fas fa-copy"></i></button>
+                </div>
                 <div class="instruction">
                     貼上後，按下「<b>傳送</b>」。
                 </div>
@@ -429,7 +449,10 @@
                 <div class="instruction">
                     FAQ 是很好的教學素材。請在對話框輸入以下指令，讓 AI 幫您生成：
                 </div>
-                <div class="copy-box">根據我提供的資料，為「金融防詐騙」這個主題生成一份常見問答集 (FAQ)。</div>
+                <div class="copy-container">
+                    <div class="copy-box">根據我提供的資料，為「金融防詐騙」這個主題生成一份常見問答集 (FAQ)。</div>
+                    <button class="copy-btn"><i class="fas fa-copy"></i></button>
+                </div>
                 <div class="instruction">
                     貼上後，按下「<b>傳送</b>」。
                 </div>
@@ -444,7 +467,10 @@
                 <div class="instruction">
                     NotebookLM 甚至能幫您規劃學習路徑。請在對話框輸入以下指令：
                 </div>
-                <div class="copy-box">為我提供的資料建立一份學習指南。</div>
+                <div class="copy-container">
+                    <div class="copy-box">為我提供的資料建立一份學習指南。</div>
+                    <button class="copy-btn"><i class="fas fa-copy"></i></button>
+                </div>
                 <div class="instruction">
                     貼上後，按下「<b>傳送</b>」。
                 </div>
@@ -463,7 +489,10 @@
                 <div class="instruction">
                     AI 會詢問您想討論什麼。請在跳出的輸入框中，輸入您想生成語音的主題，例如：
                 </div>
-                <div class="copy-box">如何辨識釣魚網站和詐騙簡訊</div>
+                <div class="copy-container">
+                    <div class="copy-box">如何辨識釣魚網站和詐騙簡訊</div>
+                    <button class="copy-btn"><i class="fas fa-copy"></i></button>
+                </div>
                 <div class="instruction">
                     輸入完畢後，按下「<b>產生</b>」。
                 </div>
@@ -485,7 +514,10 @@
                 <div class="instruction">
                     這次我們需要更專門的資料。請複製以下這篇關於「釣魚信件」的文章網址：
                 </div>
-                <div class="copy-box">https://www.tsg.com.tw/blog-detail10-299-0-phishing.htm</div>
+                <div class="copy-container">
+                    <div class="copy-box">https://www.tsg.com.tw/blog-detail10-299-0-phishing.htm</div>
+                    <button class="copy-btn"><i class="fas fa-copy"></i></button>
+                </div>
                 <span class="action-title">2. 將新網址加入來源</span>
                 <div class="instruction">
                     請重複【步驟三】的動作，點擊「<b>+ 新增來源</b>」→「<b>網站連結</b>」，將這個新網址加入到您的筆記本中。
@@ -505,7 +537,10 @@
                 <div class="instruction">
                     請在下方的對話框中，提出以下問題，讓 AI 幫您整理一份結構化的比較表格：
                 </div>
-                <div class="copy-box">綜合我提供的兩份資料，請製作一張比較表格，比較「釣魚網站」、「釣魚簡訊」和「釣魚郵件」的異同，欄位需包含：管道、常見特徵、防範方法。</div>
+                <div class="copy-container">
+                    <div class="copy-box">綜合我提供的兩份資料，請製作一張比較表格，比較「釣魚網站」、「釣魚簡訊」和「釣魚郵件」的異同，欄位需包含：管道、常見特徵、防範方法。</div>
+                    <button class="copy-btn"><i class="fas fa-copy"></i></button>
+                </div>
                 <span class="action-title">3. 釘選成果</span>
                 <div class="instruction">
                     請將 AI 生成的表格，用「<b>圖釘</b>」功能釘選到右邊的筆記板。
@@ -520,7 +555,10 @@
                 <div class="instruction">
                     請向 AI 下達以下指令，為您的課程設計評量題目：
                 </div>
-                <div class="copy-box">根據所有資料，設計 3 道關於防範釣魚詐騙的情境式選擇題，並附上正確答案與詳解。</div>
+                <div class="copy-container">
+                    <div class="copy-box">根據所有資料，設計 3 道關於防範釣魚詐騙的情境式選擇題，並附上正確答案與詳解。</div>
+                    <button class="copy-btn"><i class="fas fa-copy"></i></button>
+                </div>
                  <span class="action-title">2. 釘選成果</span>
                 <div class="instruction">
                     請將生成的題目與答案，用「<b>圖釘</b>」功能釘選到右邊的筆記板。
@@ -535,7 +573,10 @@
                 <div class="instruction">
                     心智圖適合發散思考，但流程圖更適合步驟化教學。請向 AI 下達以下指令：
                 </div>
-                <div class="copy-box">幫我創建一個「收到可疑簡訊或郵件時的處理步驟」流程圖。</div>
+                <div class="copy-container">
+                    <div class="copy-box">幫我創建一個「收到可疑簡訊或郵件時的處理步驟」流程圖。</div>
+                    <button class="copy-btn"><i class="fas fa-copy"></i></button>
+                </div>
                  <span class="action-title">2. 釘選成果</span>
                 <div class="instruction">
                     請將 AI 生成的流程圖，用「<b>圖釘</b>」功能釘選到右邊的筆記板。
@@ -580,28 +621,24 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
+        // --- 簡報模式控制 ---
         const body = document.body;
         const toggleBtn = document.getElementById('toggle-mode-btn');
         const prevBtn = document.getElementById('prev-slide-btn');
         const nextBtn = document.getElementById('next-slide-btn');
         const slideCounter = document.getElementById('slide-counter');
-        
         const slides = Array.from(document.querySelectorAll('.slide'));
         let currentSlideIndex = 0;
         let isPresentationMode = false;
         let originalScrollPosition = 0;
 
         function showSlide(index) {
-            slides.forEach((slide) => {
-                slide.classList.remove('active');
-            });
-
+            slides.forEach((slide) => slide.classList.remove('active'));
             const currentSlide = slides[index];
             if (currentSlide) {
                 currentSlide.classList.add('active');
                 currentSlide.scrollTop = 0;
             }
-
             slideCounter.textContent = `第 ${index + 1} / ${slides.length} 頁`;
             prevBtn.disabled = (index === 0);
             nextBtn.disabled = (index === slides.length - 1);
@@ -621,54 +658,96 @@
             isPresentationMode = false;
             body.classList.remove('presentation-mode');
             toggleBtn.textContent = '切換簡報模式';
-            
             slides.forEach(slide => slide.classList.remove('active'));
-            
             window.scrollTo(0, originalScrollPosition);
         }
 
         function toggleMode() {
-            if (isPresentationMode) {
-                exitPresentationMode();
-            } else {
-                enterPresentationMode();
-            }
+            isPresentationMode ? exitPresentationMode() : enterPresentationMode();
         }
 
         function handleKeydown(e) {
             if (!isPresentationMode) return;
-
             if (e.key === 'ArrowRight' || e.key === ' ') {
                 e.preventDefault();
-                if (currentSlideIndex < slides.length - 1) {
-                    currentSlideIndex++;
-                    showSlide(currentSlideIndex);
-                }
+                if (currentSlideIndex < slides.length - 1) showSlide(++currentSlideIndex);
             } else if (e.key === 'ArrowLeft') {
                 e.preventDefault();
-                if (currentSlideIndex > 0) {
-                    currentSlideIndex--;
-                    showSlide(currentSlideIndex);
-                }
+                if (currentSlideIndex > 0) showSlide(--currentSlideIndex);
             } else if (e.key === 'Escape') {
                 exitPresentationMode();
             }
         }
 
         toggleBtn.addEventListener('click', toggleMode);
-        nextBtn.addEventListener('click', () => {
-            if (currentSlideIndex < slides.length - 1) {
-                currentSlideIndex++;
-                showSlide(currentSlideIndex);
-            }
-        });
-        prevBtn.addEventListener('click', () => {
-             if (currentSlideIndex > 0) {
-                currentSlideIndex--;
-                showSlide(currentSlideIndex);
-            }
-        });
+        nextBtn.addEventListener('click', () => { if (currentSlideIndex < slides.length - 1) showSlide(++currentSlideIndex); });
+        prevBtn.addEventListener('click', () => { if (currentSlideIndex > 0) showSlide(--currentSlideIndex); });
         document.addEventListener('keydown', handleKeydown);
+
+        // --- 一鍵複製功能 (圖示切換) ---
+        const copyButtons = document.querySelectorAll('.copy-btn');
+        copyButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const textToCopy = button.dataset.copyText || button.previousElementSibling.innerText;
+                
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    button.disabled = true;
+                    button.innerHTML = '<i class="fas fa-check"></i>';
+                    button.classList.add('copied');
+                    
+                    setTimeout(() => {
+                        button.innerHTML = '<i class="fas fa-copy"></i>';
+                        button.classList.remove('copied');
+                        button.disabled = false;
+                    }, 1500);
+
+                }).catch(err => {
+                    console.error('複製失敗:', err);
+                    button.innerHTML = '<i class="fas fa-times"></i>';
+                    button.style.color = '#dc3545';
+                    setTimeout(() => {
+                        button.innerHTML = '<i class="fas fa-copy"></i>';
+                        button.style.color = '';
+                    }, 2000);
+                });
+            });
+        });
+
+        // --- 吉祥物互動特效 ---
+        const mascot = document.getElementById('mascot');
+        if (mascot && typeof confetti === 'function') {
+            let mascotScale = 1;
+            let clickTimeout;
+            const maxScale = 2.8;
+            const scaleIncrement = 0.25;
+
+            mascot.addEventListener('click', (e) => {
+                clearTimeout(clickTimeout);
+                const rect = mascot.getBoundingClientRect();
+                const origin = {
+                    x: (rect.left + rect.right) / 2 / window.innerWidth,
+                    y: (rect.top + rect.bottom) / 2 / window.innerHeight
+                };
+                mascotScale += scaleIncrement;
+                mascot.style.transform = `scale(${mascotScale})`;
+
+                if (mascotScale >= maxScale) {
+                    confetti({ particleCount: 200, spread: 180, origin: origin, gravity: 0.8, startVelocity: 45 });
+                    mascot.style.opacity = '0';
+                    setTimeout(() => {
+                        mascotScale = 1; 
+                        mascot.style.transform = 'scale(1)';
+                        mascot.style.opacity = '1';
+                    }, 500);
+                } else {
+                    confetti({ particleCount: 50, spread: 70, origin: origin, gravity: 1.2 });
+                    clickTimeout = setTimeout(() => {
+                        mascotScale = 1;
+                        mascot.style.transform = `scale(1) translateY(0px)`;
+                    }, 2000);
+                }
+            });
+        }
     });
     </script>
 </body>

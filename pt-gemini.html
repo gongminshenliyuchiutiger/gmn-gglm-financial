@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gemini 實作工作坊講義</title>
+    
+    <!-- 引入 Font Awesome 圖示庫 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
     <style>
         body {
             font-family: 'Segoe UI', 'Microsoft JhengHei', '微軟正黑體', sans-serif;
@@ -26,14 +30,14 @@
         header {
             background-color: #4A148C;
             color: white;
-            padding: 20px 30px; /* 微調 padding */
+            padding: 20px 30px;
             text-align: center;
             border-radius: 8px;
             margin-bottom: 30px;
-            display: flex; /* 使用 flexbox 來佈局 */
+            display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap; /* 在小螢幕上換行 */
+            flex-wrap: wrap;
             gap: 15px;
         }
         header .title-group {
@@ -62,7 +66,7 @@
             border: 1px solid #ced4da;
             border-radius: 8px;
             overflow: hidden;
-            background-color: #fff; /* 確保有背景色 */
+            background-color: #fff;
         }
         .step-header {
             background-color: #e9ecef;
@@ -87,16 +91,63 @@
             padding-left: 15px;
             border-left: 3px solid #8E24AA;
         }
+        .copy-container {
+            position: relative;
+            margin: 10px 0;
+        }
         .copy-box {
             background-color: #f3e5f5;
             border: 1px solid #ab47bc;
             padding: 15px;
-            margin: 10px 0;
             border-radius: 5px;
             font-family: "Courier New", Courier, monospace;
             font-size: 1.1em;
             word-wrap: break-word;
+            padding-right: 60px; /* 留給按鈕的空間可以少一點 */
         }
+        
+        /* 【修改】簡約輕巧的複製按鈕樣式 */
+        .copy-btn {
+            position: absolute;
+            top: 50%;
+            right: 8px; /* 離邊緣近一點 */
+            transform: translateY(-50%);
+            
+            /* 外觀設定 */
+            background-color: transparent; /* 預設透明背景 */
+            color: #888; /* 預設圖示為灰色 */
+            border: none;
+            border-radius: 50%; /* 圓形按鈕區域 */
+            width: 36px; /* 固定寬高 */
+            height: 36px;
+            padding: 0;
+            
+            /* Flexbox置中圖示 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s, transform 0.2s;
+        }
+        .copy-btn:hover {
+            background-color: #e9ecef; /* 滑鼠懸停時顯示淺灰色背景 */
+            color: #333; /* 圖示變深色 */
+        }
+        .copy-btn i {
+            font-size: 1.1em; /* 圖示大小 */
+            transition: transform 0.2s ease-out;
+        }
+        
+        /* 複製成功後的樣式 */
+        .copy-btn.copied {
+            color: #28a745; /* 成功時變綠色 */
+        }
+        .copy-btn.copied i {
+            transform: scale(1.2); /* 成功時圖示稍微放大 */
+        }
+        /* --- */
+
         .screen-ref {
             background-color: #e3f2fd;
             border: 1px solid #90caf9;
@@ -116,6 +167,11 @@
             border-radius: 5px;
             margin-bottom: 20px;
         }
+        .highlight-text {
+            background-color: #fff9c4;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
         footer {
             text-align: center;
             padding: 25px;
@@ -129,7 +185,7 @@
             right: 20px;
             width: 120px;
             z-index: 1000;
-            transition: transform 0.3s ease-in-out, opacity 0.3s ease;
+            transition: transform 0.2s ease-in-out, opacity 0.3s ease;
             cursor: pointer;
         }
         #mascot:hover {
@@ -142,19 +198,11 @@
         }
         
         @media (max-width: 768px) {
-            header {
-                justify-content: center;
-            }
-            #mascot {
-                width: 90px;
-                bottom: 15px;
-                right: 15px;
-            }
+            header { justify-content: center; }
+            #mascot { width: 90px; bottom: 15px; right: 15px; }
         }
         
-        /* --- 新增：簡報模式相關樣式 --- */
-
-        /* 模式切換按鈕 */
+        /* --- 簡報模式相關樣式 --- */
         #toggle-mode-btn {
             background-color: #fff;
             color: #4A148C;
@@ -171,13 +219,9 @@
             background-color: #f3e5f5;
             transform: scale(1.05);
         }
-
-        /* 簡報導覽列 (預設隱藏) */
         #presentation-controls {
             position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
+            bottom: 0; left: 0; width: 100%;
             background-color: rgba(0, 0, 0, 0.7);
             color: white;
             display: flex;
@@ -185,109 +229,69 @@
             align-items: center;
             padding: 15px 0;
             z-index: 2000;
-            opacity: 0;
-            visibility: hidden;
+            opacity: 0; visibility: hidden;
             transition: opacity 0.3s, visibility 0.3s;
         }
         #presentation-controls button {
-            background: none;
-            border: 2px solid white;
-            color: white;
-            font-size: 1.2em;
-            padding: 8px 18px;
-            margin: 0 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: opacity 0.2s;
+            background: none; border: 2px solid white; color: white;
+            font-size: 1.2em; padding: 8px 18px; margin: 0 20px;
+            border-radius: 8px; cursor: pointer; transition: opacity 0.2s;
         }
         #presentation-controls button:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
+            opacity: 0.4; cursor: not-allowed;
         }
         #slide-counter {
-            font-size: 1.2em;
-            min-width: 100px;
-            text-align: center;
+            font-size: 1.2em; min-width: 100px; text-align: center;
         }
-
-        /* 投影片基礎樣式 (預設情況下不影響佈局) */
-        .slide {
-             /* 在講義模式下沒有特殊樣式 */
-        }
-
-        /* 當進入簡報模式時的樣式 (透過 body.presentation-mode 觸發) */
+        .slide { }
         body.presentation-mode {
-            background-color: #212529; /* 深色背景 */
-            overflow: hidden; /* 隱藏滾動條 */
+            background-color: #212529; overflow: hidden;
         }
-        
-        /* 簡報模式下，主要容器變成一個透明的、置中的 flex 容器 */
         body.presentation-mode .container {
-            max-width: 100%;
-            width: 100%;
-            height: 100vh;
-            padding: 0;
-            margin: 0;
-            border: none;
-            border-radius: 0;
+            max-width: 100%; width: 100%; height: 100vh;
+            padding: 0; margin: 0; border: none; border-radius: 0;
             background-color: transparent;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             overflow: hidden;
         }
-        
-        /* 簡報模式下，隱藏不需要的元素 */
         body.presentation-mode header,
         body.presentation-mode footer,
-        body.presentation-mode #mascot {
-            display: none;
-        }
-
-        /* 簡報模式下，顯示導覽列 */
+        body.presentation-mode #mascot { display: none; }
         body.presentation-mode #presentation-controls {
-            opacity: 1;
-            visibility: visible;
+            opacity: 1; visibility: visible;
         }
-
-        /* 簡報模式下，隱藏所有投影片 */
-        body.presentation-mode .slide {
-            display: none;
-        }
-
-        /* 簡報模式下，只顯示當前作用中的投影片 */
+        body.presentation-mode .slide { display: none; }
         body.presentation-mode .slide.active {
-            display: block;
-            width: 90%;
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 40px;
-            background-color: #ffffff;
-            border-radius: 12px;
+            display: block; width: 90%; max-width: 1100px;
+            margin: 0 auto; padding: 50px;
+            background-color: #ffffff; border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            box-sizing: border-box;
-            /* 預留導覽列空間，並允許投影片內部滾動 */
-            max-height: calc(100vh - 120px); 
+            box-sizing: border-box; max-height: calc(100vh - 120px); 
             overflow-y: auto;
         }
-
-        /* 簡報模式下對投影片內容的美化微調 */
         body.presentation-mode .section-title {
-            font-size: 3em;
-            text-align: center;
-            border-bottom-width: 5px;
+            font-size: 3.2em; text-align: center; border-bottom-width: 5px;
         }
         body.presentation-mode .step-box {
-            border: none;
-            box-shadow: none;
-            margin-bottom: 0;
+            border: none; box-shadow: none; margin-bottom: 0;
         }
-        body.presentation-mode .intro-block p {
-            font-size: 1.4em;
+        body.presentation-mode .step-header {
+            font-size: 2em; padding: 15px 25px;
         }
+        body.presentation-mode .step-content,
+        body.presentation-mode .important-note,
+        body.presentation-mode .instruction {
+            font-size: 1.3em; line-height: 2;
+        }
+        body.presentation-mode .copy-box {
+            font-size: 1.2em; padding: 20px; padding-right: 90px;
+        }
+        body.presentation-mode .intro-block p { font-size: 1.5em; }
+        body.presentation-mode .copy-btn { padding: 8px 16px; font-size: 1em; }
     </style>
 </head>
 <body>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
 
     <div class="container">
         <header>
@@ -295,11 +299,9 @@
                 <h1>Gemini 實作工作坊講義</h1>
                 <p>以「防範金融詐騙」為例</p>
             </div>
-            <!-- 新增：模式切換按鈕 -->
             <button id="toggle-mode-btn">切換簡報模式</button>
         </header>
 
-        <!-- 為每個要當作投影片的區塊加上 "slide" class -->
         <h2 class="section-title slide">課程介紹：何時用 Gemini？</h2>
         <div class="important-note slide">
             <p><strong>【關鍵心法】</strong></p>
@@ -315,7 +317,10 @@
             <div class="step-content">
                 <span class="action-title">1. 開啟網站</span>
                 <div class="instruction">
-                    請在 Chrome 瀏覽器網址列輸入：<code>gemini.google.com</code>，然後按下 Enter 鍵。
+                    <div class="copy-container">
+                        <code style="font-size: 1.1em;">請在 Chrome 瀏覽器網址列輸入：<span class="highlight-text"><a href="https://gemini.google.com" target="_blank" rel="noopener noreferrer">gemini.google.com</a></span>，然後按下 Enter 鍵。</code>
+                        <button class="copy-btn" data-copy-text="gemini.google.com"><i class="fas fa-copy"></i></button>
+                    </div>
                 </div>
                 <span class="action-title">2. 登入帳號</span>
                 <div class="instruction">
@@ -324,7 +329,6 @@
             </div>
         </div>
         
-        <!-- 【新增】說明新版介面功能 -->
         <div class="step-box slide">
             <div class="step-header">動作：認識主要操作介面</div>
             <div class="step-content">
@@ -335,9 +339,7 @@
                         <li><b>2.5 Flash：</b>速度快，適合快速問答、創意發想、內容摘要。</li>
                         <li><b>2.5 Pro：</b>能力更強，適合複雜的邏輯推理、程式設計、深度分析。</li>
                     </ul>
-                   
                 </div>
-
                 <span class="action-title">2. 認識輸入框功能</span>
                 <div class="instruction">
                     在最下方的「請輸入 Gemini 提示詞」輸入框旁，有幾個實用圖示：
@@ -345,12 +347,11 @@
                         <li><b>上傳檔案{+}：</b>點擊這裡可以上傳圖片、文件等檔案讓 Gemini 分析。</li>
                         <li><b>Deep Research：</b>針對問題進行更深入、更廣泛的網路搜尋與分析，產生詳細報告。</li>
                         <li><b>Canvas：</b>線上白板，可以將想法視覺化、組織成心智圖或流程圖。</li>
-			<li><b>圖像：</b>根據文字描述，創作或生成新的圖片的功能。</li>
+			            <li><b>圖像：</b>根據文字描述，創作或生成新的圖片的功能。</li>
                     </ul>
                 </div>
             </div>
         </div>
-
 
         <h2 class="section-title slide">步驟二：核心功能實作</h2>
         
@@ -361,7 +362,10 @@
                 <div class="instruction">
                     請在畫面下方的輸入框中，複製並貼上以下指令：
                 </div>
-                <div class="copy-box">請扮演一位編劇，寫一段短劇腳本。角色有兩位：一位是想買限量球鞋的大學生小金，另一位是他的朋友小利。劇情是小金收到一則「限量球鞋限時特價」的簡訊，小利如何一步步引導他發現這可能是個詐騙陷阱。</div>
+                <div class="copy-container">
+                    <div class="copy-box">請扮演一位編劇，寫一段短劇腳本。角色有兩位：一位是想買限量球鞋的大學生小金，另一位是他的朋友小利。劇情是小金收到一則「限量球鞋限時特價」的簡訊，小利如何一步步引導他發現這可能是個詐騙陷阱。</div>
+                    <button class="copy-btn"><i class="fas fa-copy"></i></button>
+                </div>
                 <div class="instruction">
                     貼上後，按下右邊的「<b>傳送</b>」按鈕（紙飛機圖示）。
                 </div>
@@ -369,7 +373,6 @@
         </div>
 
         <div class="step-box slide">
-            <!-- 【修改】更新圖片上傳的說明 -->
             <div class="step-header">實作 2.2：分析圖片 (找出詐騙疑點)</div>
             <div class="step-content">
                 <span class="action-title">1. 尋找範例圖片</span>
@@ -384,7 +387,10 @@
                 <div class="instruction">
                     上傳圖片後，在輸入框中輸入以下指令：
                 </div>
-                <div class="copy-box">這是一張我收到的簡訊截圖，請幫我分析這則訊息，告訴我它有哪些地方很可疑，為什麼可能是詐騙？</div>
+                <div class="copy-container">
+                    <div class="copy-box">這是一張我收到的簡訊截圖，請幫我分析這則訊息，告訴我它有哪些地方很可疑，為什麼可能是詐騙？</div>
+                    <button class="copy-btn"><i class="fas fa-copy"></i></button>
+                </div>
                 <div class="instruction">
                     按下「<b>傳送</b>」。Gemini 會分析圖片中的文字與連結，並指出可疑之處。
                 </div>
@@ -398,7 +404,10 @@
                 <div class="instruction">
                     複製並貼上以下指令，讓 Gemini 生成比較表格：
                 </div>
-                <div class="copy-box">請幫我製作一個表格，比較「釣魚網站詐騙」和「假投資詐騙」的差異。欄位需要包含：詐騙類型、常見手法、目標對象、防範方法。</div>
+                <div class="copy-container">
+                    <div class="copy-box">請幫我製作一個表格，比較「釣魚網站詐騙」和「假投資詐騙」的差異。欄位需要包含：詐騙類型、常見手法、目標對象、防範方法。</div>
+                    <button class="copy-btn"><i class="fas fa-copy"></i></button>
+                </div>
                 <div class="instruction">
                     按下「<b>傳送</b>」。您會得到一個清晰的表格，方便教學使用。
                 </div>
@@ -407,7 +416,6 @@
 
         <h2 class="section-title slide">步驟三：優化與匯出結果</h2>
         
-        <!-- 【修改】刪除「查看草稿」部分，簡化步驟 -->
         <div class="step-box slide">
             <div class="step-header">實作 3.1：編輯提示以優化回答</div>
             <div class="step-content">
@@ -416,13 +424,17 @@
                     假設您對剛才生成的表格不完全滿意。請找到您當時提出「請幫我製作一個表格...」的那則問題，旁邊有一個「<b>鉛筆</b>」圖示，點擊它。
                 </div>
                 <div class="instruction">
-                    將原本的指令修改成：<code>請幫我製作一個表格，比較「釣魚網站詐騙」和「假投資詐騙」的差異。欄位需要包含：詐騙類型、常見手法、目標對象、防範方法、和一句給受害者的提醒。</code> 然後按下「<b>更新</b>」。
+                    將原本的指令修改成：
+                    <div class="copy-container">
+                        <div class="copy-box">請幫我製作一個表格，比較「釣魚網站詐騙」和「假投資詐騙」的差異。欄位需要包含：詐騙類型、常見手法、目標對象、防範方法、和一句給受害者的提醒。</div>
+                        <button class="copy-btn"><i class="fas fa-copy"></i></button>
+                    </div>
+                     然後按下「<b>更新</b>」。
                 </div>
                 <div class="screen-ref">Gemini 會根據您修改後的新指令，重新生成一份包含提醒欄位的表格。</div>
             </div>
         </div>
 
-        <!-- 【修改】刪除「事實查核」部分，簡化步驟 -->
         <div class="step-box slide">
             <div class="step-header">實作 3.2：匯出成果</div>
             <div class="step-content">
@@ -449,7 +461,10 @@
                 <div class="instruction">
                     請向 Gemini 下達指令，生成一個比較表格。
                 </div>
-                <div class="copy-box">請用表格比較「遊戲內寶物交易詐騙」和「代購遊戲點數詐騙」兩種手法的異同。</div>
+                <div class="copy-container">
+                    <div class="copy-box">請用表格比較「遊戲內寶物交易詐騙」和「代購遊戲點數詐騙」兩種手法的異同。</div>
+                    <button class="copy-btn"><i class="fas fa-copy"></i></button>
+                </div>
             </div>
         </div>
 
@@ -460,7 +475,10 @@
                 <div class="instruction">
                     請 Gemini 創作一幅插圖，用於課堂簡報。
                 </div>
-                <div class="copy-box">請生成一張日系動漫風格的插圖，一個遊戲角色拿著盾牌，擋住了一個寫著「免費點數」的釣魚鉤。</div>
+                <div class="copy-container">
+                    <div class="copy-box">請生成一張日系動漫風格的插圖，一個遊戲角色拿著盾牌，擋住了一個寫著「免費點數」的釣魚鉤。</div>
+                    <button class="copy-btn"><i class="fas fa-copy"></i></button>
+                </div>
             </div>
         </div>
 
@@ -471,11 +489,13 @@
                 <div class="instruction">
                     讓學生思考應對方式。
                 </div>
-                <div class="copy-box">請設計一個關於遊戲點數詐騙的情境申論題，情境是一位國中生在網路上遇到一個人說可以用半價幫他儲值遊戲點數，但要求先提供帳號密碼。題目需引導學生思考風險和正確作法。</div>
+                <div class="copy-container">
+                    <div class="copy-box">請設計一個關於遊戲點數詐騙的情境申論題，情境是一位國中生在網路上遇到一個人說可以用半價幫他儲值遊戲點數，但要求先提供帳號密碼。題目需引導學生思考風險和正確作法。</div>
+                    <button class="copy-btn"><i class="fas fa-copy"></i></button>
+                </div>
             </div>
         </div>
         
-        <!-- 【修改】移除查核要求，聚焦在匯出 -->
         <div class="step-box slide">
             <div class="step-header">任務四：匯出教材初稿</div>
             <div class="step-content">
@@ -499,116 +519,147 @@
         <img src="image/LiyuChill.svg" alt="吉祥物">
     </div>
 
-    <!-- 新增：簡報導覽列 HTML -->
     <div id="presentation-controls">
         <button id="prev-slide-btn">‹ 上一張</button>
         <span id="slide-counter"></span>
         <button id="next-slide-btn">下一張 ›</button>
     </div>
 
-    <!-- 新增：簡報模式控制的 JavaScript -->
     <script>
     document.addEventListener('DOMContentLoaded', () => {
+        // --- 簡報模式控制 (無修改) ---
         const body = document.body;
         const toggleBtn = document.getElementById('toggle-mode-btn');
         const controls = document.getElementById('presentation-controls');
         const prevBtn = document.getElementById('prev-slide-btn');
         const nextBtn = document.getElementById('next-slide-btn');
         const slideCounter = document.getElementById('slide-counter');
-        
-        // 抓取所有被標記為 "slide" 的元素
         const slides = Array.from(document.querySelectorAll('.slide'));
         let currentSlideIndex = 0;
         let isPresentationMode = false;
-        let originalScrollPosition = 0; // 儲存原始滾動位置
+        let originalScrollPosition = 0;
 
         function showSlide(index) {
-            // 隱藏所有投影片的 active 狀態
-            slides.forEach((slide) => {
-                slide.classList.remove('active');
-            });
-
-            // 顯示當前的投影片
+            slides.forEach((slide) => slide.classList.remove('active'));
             const currentSlide = slides[index];
             if (currentSlide) {
                 currentSlide.classList.add('active');
-                currentSlide.scrollTop = 0; // 確保長投影片從頂部開始顯示
+                currentSlide.scrollTop = 0;
             }
-
-            // 更新頁碼
             slideCounter.textContent = `第 ${index + 1} / ${slides.length} 頁`;
-
-            // 更新按鈕的可點擊狀態
             prevBtn.disabled = (index === 0);
             nextBtn.disabled = (index === slides.length - 1);
         }
 
         function enterPresentationMode() {
             isPresentationMode = true;
-            originalScrollPosition = window.pageYOffset; // 記錄進入前的位置
+            originalScrollPosition = window.pageYOffset;
             body.classList.add('presentation-mode');
             toggleBtn.textContent = '返回講義模式';
             currentSlideIndex = 0; 
             showSlide(currentSlideIndex);
-            window.scrollTo(0, 0); // 確保簡報模式從頂部開始
+            window.scrollTo(0, 0);
         }
 
         function exitPresentationMode() {
             isPresentationMode = false;
             body.classList.remove('presentation-mode');
             toggleBtn.textContent = '切換簡報模式';
-            
-            // 移除所有投影片的 active 狀態，使其恢復 CSS 預設顯示
             slides.forEach(slide => slide.classList.remove('active'));
-            
-            // 恢復到退出前的位置
             window.scrollTo(0, originalScrollPosition);
         }
 
         function toggleMode() {
-            if (isPresentationMode) {
-                exitPresentationMode();
-            } else {
-                enterPresentationMode();
-            }
+            isPresentationMode ? exitPresentationMode() : enterPresentationMode();
         }
 
         function handleKeydown(e) {
-            // 如果不是簡報模式，就忽略任何按鍵
             if (!isPresentationMode) return;
-
-            if (e.key === 'ArrowRight' || e.key === ' ') { // 右方向鍵或空白鍵
-                e.preventDefault(); // 防止空白鍵造成頁面滾動
-                if (currentSlideIndex < slides.length - 1) {
-                    currentSlideIndex++;
-                    showSlide(currentSlideIndex);
-                }
-            } else if (e.key === 'ArrowLeft') { // 左方向鍵
+            if (e.key === 'ArrowRight' || e.key === ' ') {
                 e.preventDefault();
-                if (currentSlideIndex > 0) {
-                    currentSlideIndex--;
-                    showSlide(currentSlideIndex);
-                }
-            } else if (e.key === 'Escape') { // Esc 鍵
+                if (currentSlideIndex < slides.length - 1) showSlide(++currentSlideIndex);
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                if (currentSlideIndex > 0) showSlide(--currentSlideIndex);
+            } else if (e.key === 'Escape') {
                 exitPresentationMode();
             }
         }
 
-        // 註冊事件監聽器
         toggleBtn.addEventListener('click', toggleMode);
-        nextBtn.addEventListener('click', () => {
-            if (currentSlideIndex < slides.length - 1) {
-                currentSlideIndex++;
-                showSlide(currentSlideIndex);
-            }
-        });
-        prevBtn.addEventListener('click', () => {
-             if (currentSlideIndex > 0) {
-                currentSlideIndex--;
-                showSlide(currentSlideIndex);
-            }
-        });
+        nextBtn.addEventListener('click', () => { if (currentSlideIndex < slides.length - 1) showSlide(++currentSlideIndex); });
+        prevBtn.addEventListener('click', () => { if (currentSlideIndex > 0) showSlide(--currentSlideIndex); });
         document.addEventListener('keydown', handleKeydown);
+
+        // --- 【修改】一鍵複製功能 (圖示切換) ---
+        const copyButtons = document.querySelectorAll('.copy-btn');
+        copyButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const textToCopy = button.dataset.copyText || button.previousElementSibling.innerText;
+                
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    // 暫時禁用按鈕，防止連續點擊
+                    button.disabled = true;
+
+                    // 切換為 "打勾" 圖示並加上成功樣式
+                    button.innerHTML = '<i class="fas fa-check"></i>';
+                    button.classList.add('copied');
+                    
+                    // 1.5秒後恢復原狀
+                    setTimeout(() => {
+                        button.innerHTML = '<i class="fas fa-copy"></i>';
+                        button.classList.remove('copied');
+                        button.disabled = false;
+                    }, 1500);
+
+                }).catch(err => {
+                    console.error('複製失敗:', err);
+                    // (可選) 增加一個失敗的視覺回饋
+                    button.innerHTML = '<i class="fas fa-times"></i>';
+                    button.style.color = '#dc3545'; // 紅色
+                    setTimeout(() => {
+                        button.innerHTML = '<i class="fas fa-copy"></i>';
+                        button.style.color = ''; // 清除顏色
+                    }, 2000);
+                });
+            });
+        });
+
+        // --- 吉祥物互動特效 (無修改) ---
+        const mascot = document.getElementById('mascot');
+        if (mascot && typeof confetti === 'function') {
+            let mascotScale = 1;
+            let clickTimeout;
+            const maxScale = 2.8;
+            const scaleIncrement = 0.25;
+
+            mascot.addEventListener('click', (e) => {
+                clearTimeout(clickTimeout);
+                const rect = mascot.getBoundingClientRect();
+                const origin = {
+                    x: (rect.left + rect.right) / 2 / window.innerWidth,
+                    y: (rect.top + rect.bottom) / 2 / window.innerHeight
+                };
+                mascotScale += scaleIncrement;
+                mascot.style.transform = `scale(${mascotScale})`;
+
+                if (mascotScale >= maxScale) {
+                    confetti({ particleCount: 200, spread: 180, origin: origin, gravity: 0.8, startVelocity: 45 });
+                    mascot.style.opacity = '0';
+                    setTimeout(() => {
+                        mascotScale = 1; 
+                        mascot.style.transform = 'scale(1)';
+                        mascot.style.opacity = '1';
+                    }, 500);
+                } else {
+                    confetti({ particleCount: 50, spread: 70, origin: origin, gravity: 1.2 });
+                    clickTimeout = setTimeout(() => {
+                        mascotScale = 1;
+                        mascot.style.transform = `scale(1) translateY(0px)`;
+                    }, 2000);
+                }
+            });
+        }
     });
     </script>
 </body>
