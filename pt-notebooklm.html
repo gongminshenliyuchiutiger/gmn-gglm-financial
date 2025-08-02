@@ -244,6 +244,7 @@
         .comprehensive-task {
             background-color: #fffde7;
             border-color: var(--accent-yellow-border);
+            margin-bottom: 30px; 
         }
         .comprehensive-task p:first-child {
             font-size: 1.2em;
@@ -255,7 +256,6 @@
             background-color: var(--accent-yellow);
             padding: 2px 6px;
             border-radius: 4px;
-            font-family: "Courier New", Courier, monospace;
         }
 
         footer {
@@ -367,8 +367,8 @@
         }
         body.presentation-mode .slide { display: none; }
         body.presentation-mode .slide.active {
-            display: block; width: 90%; max-width: 1000px;
-            margin: 0 auto; padding: 40px;
+            display: block; width: 90%; max-width: 1100px;
+            margin: 0 auto; padding: 50px;
             background-color: #ffffff; border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             box-sizing: border-box;
@@ -376,12 +376,21 @@
             overflow-y: auto;
         }
         body.presentation-mode .section-title {
-            font-size: 3em; text-align: center; border-bottom-width: 5px;
+            font-size: 3.2em; text-align: center; border-bottom-width: 5px;
         }
         body.presentation-mode .step-box {
             border: none; box-shadow: none; margin-bottom: 0;
         }
-        body.presentation-mode .intro-block p { font-size: 1.4em; }
+        body.presentation-mode .step-content,
+        body.presentation-mode .important-note,
+        body.presentation-mode .instruction {
+            font-size: 1.3em; line-height: 2;
+        }
+        body.presentation-mode .copy-box {
+            font-size: 1.2em; padding: 20px; padding-right: 90px;
+        }
+        body.presentation-mode .intro-block p { font-size: 1.5em; }
+        body.presentation-mode .copy-btn { padding: 8px 16px; font-size: 1em; }
     </style>
 </head>
 <body>
@@ -429,9 +438,7 @@
                 <span class="action-title">1. 開啟網站</span>
                 <div class="instruction">
                        <div class="copy-container">
-                        
-                            <code style="background: none; border: none; padding: 0;">請在 Chrome 瀏覽器網址列輸入：<span class="highlight-text">notebooklm.google.com</span>，然後按下 Enter 鍵。</code>
-                        
+                        請在 Chrome 瀏覽器網址列輸入：<code style="font-size: 1.1em;"><span class="highlight-text"><a href="https://notebooklm.google.com" target="_blank" rel="noopener noreferrer">notebooklm.google.com</a></span></code>，然後按下 Enter 鍵。
                         <button class="copy-btn" data-copy-text="notebooklm.google.com"><i class="fas fa-copy"></i></button>
                     </div>
                 </div>
@@ -446,20 +453,20 @@
             <div class="step-content">
                 <span class="action-title">1. 點擊「新增筆記本」按鈕</span>
                 <div class="instruction">
-                    請找到畫面左上角，點擊藍色的「<b>+ 新增筆記本</b>」按鈕。
+                    請找到畫面左上角，點擊藍色的「<b>+ 新增</b>」筆記本按鈕。
                 </div>
-                 <span class="action-title">2. 輸入筆記本名稱</span>
+                 <span class="action-title">2. 左上角輸入筆記本名稱</span>
                 <div class="instruction">
                     <div class="copy-container">
                         <div class="copy-box" style="margin:0;">防詐騙教材實作</div>
                         <button class="copy-btn"><i class="fas fa-copy"></i></button>
                     </div>
                 </div>
-                <span class="action-title">3. 按下「確認」</span>
+                <span class="action-title">3. 環境確認</span>
                 <div class="instruction">
-                    輸入完畢後，請點擊小視窗右下角的「<b>確認</b>」按鈕。
+                    輸入完畢後，即命名完成，請先確認介面環境。
                 </div>
-                <div class="screen-ref">您將會進入一個空白的筆記本畫面，左邊是「來源」，右邊是「筆記板 (Noteboard)」。</div>
+                <div class="screen-ref">您將會進入一個空白的筆記本畫面，左邊是「來源」，右邊是「記事板 (Noteboard)」。</div>
             </div>
         </div>
 
@@ -469,11 +476,11 @@
             <div class="step-content">
                 <span class="action-title">1. 點擊「新增來源」</span>
                 <div class="instruction">
-                    請看畫面左下方的「<b>來源</b>」區塊，點擊裡面的「<b>+ 新增來源</b>」按鈕。
+                    請看畫面左方的來源區塊，點擊「<b>+ 新增</b>」區塊，點擊「<b>新增來源</b>」按鈕。
                 </div>
                 <span class="action-title">2. 選擇「網站連結」</span>
                 <div class="instruction">
-                    請在跳出的選單中，點擊「<b>網站連結</b>」這個選項。
+                    請在跳出的選單中，點擊「<b>網站</b>」這個選項。
                 </div>
                 <span class="action-title">3. 貼上網址</span>
                 <div class="instruction">
@@ -516,23 +523,23 @@
                 </div>
                  <span class="action-title">2. 來源查證</span>
                 <div class="instruction">
-                    請查看 AI 的回答，您會看到句子後面有藍色的數字，如 <code>[1]</code>。請用滑鼠點擊其中一個數字。
+                    請查看 AI 的回答，您會看到句子後面有灰色圓圈的數字。請用滑鼠點擊其中一個數字。
                 </div>
                 <div class="screen-ref">點擊後，右邊的原始文章會立刻跳到對應的段落並用黃色標示出來。這就是來源查證功能，確保內容有所本。</div>
             </div>
         </div>
 
         <div class="step-box slide">
-            <div class="step-header">實作 4.3：釘選到筆記板 (Noteboard)</div>
+            <div class="step-header">實作 4.3：釘選到記事板 (Noteboard)</div>
             <div class="step-content">
                 <span class="action-title">1. 釘選 AI 的回答</span>
                 <div class="instruction">
-                    請在剛剛 AI 的回答區塊右上角，找到一個「<b>圖釘</b>」圖示，並點擊它。
+                    請在剛剛 AI 的回答區塊左下角，找到一個「<b>圖釘</b>」圖示與文字「<b>儲存至記事</b>」，並點擊它。
                 </div>
-                <div class="screen-ref">該則回答會被完整複製到最右邊的「筆記板」區塊。筆記板不只是儲存，更是您草擬教案、整理思緒的工作區。</div>
+                <div class="screen-ref">該則回答會被完整複製到最右邊的「記事板」區塊。記事板不只是儲存，更是您草擬教案、整理思緒的工作區。</div>
                 <span class="action-title">2. 新增自己的筆記</span>
                 <div class="instruction">
-                    請在最右邊的「筆記板」區塊下方，找到並點擊「<b>+ 新增記事</b>」按鈕，然後輸入您自己的教學想法，例如：「這部分可以當作分組討論題目」。
+                    請在最右邊的「記事板」區塊下方，找到並點擊「<b>+ 新增記事</b>」按鈕，然後輸入您自己的教學想法，例如：「這部分可以當作分組討論題目」。
                 </div>
             </div>
         </div>
@@ -542,16 +549,9 @@
             <div class="step-content">
                 <span class="action-title">操作指令：</span>
                 <div class="instruction">
-                    請回到最下方的對話輸入框，複製並貼上以下指令：
+                    請看到左邊區塊的來源，勾選核取方塊，點擊中間區塊的「<b>心智圖</b>」按鈕。
                 </div>
-                <div class="copy-container">
-                    <div class="copy-box">將「常見的金融投資詐騙類型」做成一張心智圖，包含手法和預防方法。</div>
-                    <button class="copy-btn"><i class="fas fa-copy"></i></button>
-                </div>
-                <div class="instruction">
-                    貼上後，按下「<b>傳送</b>」。
-                </div>
-                <div class="screen-ref">AI 會在對話區生成一張可以互動的心智圖。</div>
+                                <div class="screen-ref">AI 會在對話區生成一張可以互動的心智圖。</div>
             </div>
         </div>
         
@@ -569,55 +569,74 @@
                 <div class="instruction">
                     貼上後，按下「<b>傳送</b>」。
                 </div>
-                <div class="screen-ref">AI 會生成一份問答格式的內容，非常適合放在課程講義或網站上。您可以將它釘選到筆記板備用。</div>
+                <div class="screen-ref">AI 會生成一份問答格式的內容，非常適合放在課程講義或網站上。您可以將它釘選到記事板備用。</div>
             </div>
         </div>
         
         <div class="step-box slide">
-            <div class="step-header">實作 4.6：一鍵生成學習指南</div>
+            <div class="step-header">實作 4.6：一鍵生成研讀指南</div>
             <div class="step-content">
                 <span class="action-title">操作指令：</span>
                 <div class="instruction">
-                    NotebookLM 甚至能幫您規劃學習路徑。請在對話框輸入以下指令：
+                    NotebookLM 甚至能幫您規劃研讀路徑。請在對話框輸入以下指令：
                 </div>
                 <div class="copy-container">
-                    <div class="copy-box">為我提供的資料建立一份學習指南。</div>
+                    <div class="copy-box">為我提供的資料建立一份研讀指南。</div>
                     <button class="copy-btn"><i class="fas fa-copy"></i></button>
                 </div>
                 <div class="instruction">
                     貼上後，按下「<b>傳送</b>」。
                 </div>
-                <div class="screen-ref">AI 會自動分析資料，產出包含「摘要」、「關鍵詞彙」和「開放式評量問題」的完整學習指南，是備課的一大利器！</div>
+                <span class="action-title">一鍵「神」生成：</span>
+                <div class="instruction">
+                    或是直接點擊右邊「<b>博士帽</b>」圖示搭配「<b>研讀指南</b>」文字，亦可以直接生成至記事板。
+                    <div class="screen-ref">AI 會自動分析資料，產出包含「概述」、「簡答題」、「申論題」、「關鍵詞彙與定義」的完整研讀指南，是備課的一大利器！</div>
+                </div>
             </div>
         </div>
 
         <div class="step-box slide">
-            <div class="step-header">實作 4.7：製作語音檔</div>
+            <div class="step-header">實作 4.7：製作語音摘要</div>
             <div class="step-content">
-                <span class="action-title">1. 點擊「建立語音總覽」</span>
+                <span class="action-title">1. 務必先設定輸出內容語言</span>
                 <div class="instruction">
-                    請在對話紀錄的上方，找到一個有「<b>耳機</b>」圖案的按鈕，名稱是「<b>建立語音總覽</b>」，並點擊它。
+                    請在畫面上方找到「<b>齒輪</b>」設定按鈕，並點擊它，再點選到「<b>輸出內容語言</b>」按鈕，選擇「<b>中文（繁體）</b>」。
                 </div>
-                <span class="action-title">2. 指定主題</span>
+
+                <span class="action-title">2. 點擊「建立語音摘要」</span>
                 <div class="instruction">
-                    AI 會詢問您想討論什麼。請在跳出的輸入框中，輸入您想生成語音的主題，例如：
+                    請在對話紀錄的上方，找到一個有「<b>音波</b>」圖案的按鈕，名稱是「<b>建立語音摘要</b>」，並點擊它。
+                </div>
+                <span class="action-title">3. Podcast客製化</span>
+                <div class="instruction">
+                    如果希望客製化，可以再畫面右邊找到「深入探索對話」，點擊「自訂」，會跳出自訂語音摘要。請在輸入框中，輸入您認為AI主持人應著重哪些部分？，例如：
                 </div>
                 <div class="copy-container">
-                    <div class="copy-box">如何辨識釣魚網站和詐騙簡訊</div>
+                    <div class="copy-box">請特別針對如何辨識釣魚網站和詐騙簡訊深刻地提醒，並且用詼諧幽默的口吻闡述。</div>
                     <button class="copy-btn"><i class="fas fa-copy"></i></button>
                 </div>
                 <div class="instruction">
                     輸入完畢後，按下「<b>產生</b>」。
                 </div>
                 <div class="screen-ref">請稍待片刻，AI 就會生成一段可播放的音檔，適合用於製作有聲教材。</div>
+
+                <!-- 音檔播放器開始 -->
+                <div style="margin-top: 20px; border: 1px solid var(--border-color); border-radius: 8px; padding: 15px 20px; background-color: #f7f9fc;">
+                    <p style="font-weight: 600; margin-top:0; margin-bottom: 10px; color: var(--secondary-text); font-size: 1.1em;">【音檔範例】防詐騙教材實作語音摘要</p>
+                    <audio controls style="width: 100%;">
+                        <source src="audio/防詐騙教材實作.wav" type="audio/wav">
+                        您的瀏覽器不支援音訊播放。
+                    </audio>
+                </div>
+                <!-- 音檔播放器結束 -->
+
             </div>
         </div>
-
              
         <h2 class="section-title slide">綜合實作練習：設計一堂「防範釣魚詐騙」課程</h2>
         <div class="comprehensive-task slide">
             <p>【任務說明】</p>
-            <p class="intro-block">現在，請老師們化身為一位課程設計師。您的任務是利用 NotebookLM，從無到有設計出一份關於「如何防範釣魚網站與簡訊詐騙」的簡易教案。您需要完成以下 <strong>五個任務</strong>，並將所有成果「釘選」到右邊的筆記板 (Noteboard) 上。</p>
+            <p class="intro-block">現在，請老師們化身為一位課程設計師。您的任務是利用 NotebookLM，從無到有設計出一份關於「如何防範釣魚網站與簡訊詐騙」的簡易教案。您需要完成以下 <strong>五個任務</strong>，並將所有成果「釘選」到右邊的記事板 (Noteboard) 上。</p>
         </div>
 
         <div class="step-box slide">
@@ -656,7 +675,7 @@
                 </div>
                 <span class="action-title">3. 釘選成果</span>
                 <div class="instruction">
-                    請將 AI 生成的表格，用「<b>圖釘</b>」功能釘選到右邊的筆記板。
+                    請將 AI 生成的表格，用「<b>圖釘</b>」功能釘選到右邊的記事板。
                 </div>
             </div>
         </div>
@@ -674,7 +693,7 @@
                 </div>
                  <span class="action-title">2. 釘選成果</span>
                 <div class="instruction">
-                    請將生成的題目與答案，用「<b>圖釘</b>」功能釘選到右邊的筆記板。
+                    請將生成的題目與答案，用「<b>圖釘</b>」功能釘選到右邊的記事板。
                 </div>
             </div>
         </div>
@@ -692,17 +711,17 @@
                 </div>
                  <span class="action-title">2. 釘選成果</span>
                 <div class="instruction">
-                    請將 AI 生成的流程圖，用「<b>圖釘</b>」功能釘選到右邊的筆記板。
+                    請將 AI 生成的流程圖，用「<b>圖釘</b>」功能釘選到右邊的記事板。
                 </div>
             </div>
         </div>
 
         <div class="step-box slide">
-            <div class="step-header">任務五：整理與命名筆記板</div>
+            <div class="step-header">任務五：整理與命名記事板</div>
             <div class="step-content">
-                <span class="action-title">1. 查看筆記板 (Noteboard)</span>
+                <span class="action-title">1. 查看記事板 (Noteboard)</span>
                 <div class="instruction">
-                    現在，請查看您最右邊的筆記板。上面應該已經釘選了「<b>比較表格</b>」、「<b>3 道選擇題</b>」和「<b>處理流程圖</b>」。
+                    現在，請查看您最右邊的記事板。上面應該已經釘選了「<b>比較表格</b>」、「<b>3 道選擇題</b>」和「<b>處理流程圖</b>」。
                 </div>
                 <span class="action-title">2. 重新命名釘選的筆記</span>
                 <div class="instruction">
