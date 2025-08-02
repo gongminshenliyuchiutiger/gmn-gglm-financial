@@ -6,6 +6,7 @@
     <meta name="description" content="AI賦能金融基礎教育課程設計工作坊，由新北市立雙溪高中邱俐瑜老師主講，旨在培養教師運用Gemini與NotebookLM進行金融素養課程設計能力。">
     <title>AI賦能金融基礎教育課程設計Gemini與NotebookLM應用實作</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -71,17 +72,44 @@
         }
 
         #mascot {
-            transition: opacity 0.3s, visibility 0.3s, transform 0.3s;
+            transition: opacity 0.3s, visibility 0.3s, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
             animation: floatMascot 3.5s ease-in-out infinite;
+            z-index: 2001; /* Ensure it's above presentation controls */
         }
         #mascot:hover {
-            transform: scale(1.1) rotate(5deg);
+            transform: scale(1.1) rotate(5deg) !important; /* Use important to override JS scaling on hover */
         }
         @keyframes floatMascot {
             0%, 100% { transform: translateY(0px) rotate(-3deg); }
             50% { transform: translateY(-12px) rotate(3deg); }
         }
         
+        #explosion-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.5);
+            background: linear-gradient(135deg, #4338ca 0%, #6d28d9 100%);
+            color: white;
+            padding: 2rem 3rem;
+            border-radius: 1rem;
+            font-size: 2.25rem; /* text-4xl */
+            font-weight: 700; /* font-bold */
+            text-align: center;
+            z-index: 3000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-out, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            white-space: nowrap;
+        }
+
+        #explosion-message.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
         .tool-card {
             border-left-width: 4px;
             transition: all 0.3s ease-in-out;
@@ -141,8 +169,109 @@
         .accordion-button[aria-expanded="true"] svg.toggle-icon {
             transform: rotate(90deg);
         }
+        .step-guide {
+             display: flex; 
+             flex-direction: column;
+        }
         .step-guide ol { padding-left: 1.5rem; }
         .step-guide li { margin-bottom: 0.75rem; }
+
+        /* --- Presentation Mode Styles --- */
+        #presentation-controls {
+            position: fixed;
+            bottom: 0; left: 0; width: 100%;
+            background-color: rgba(0, 0, 0, 0.75);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px 0;
+            z-index: 2000;
+            opacity: 0; visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        #presentation-controls button {
+            background: none; border: 2px solid white; color: white;
+            font-size: 1.2em; padding: 8px 18px; margin: 0 20px;
+            border-radius: 8px; cursor: pointer; transition: background-color 0.2s, opacity 0.2s;
+        }
+        #presentation-controls button:hover:not(:disabled) {
+             background-color: rgba(255, 255, 255, 0.2);
+        }
+        #presentation-controls button:disabled {
+            opacity: 0.4; cursor: not-allowed;
+        }
+        #slide-counter {
+            font-size: 1.2em; min-width: 100px; text-align: center;
+        }
+        body.presentation-mode {
+            background-color: #212529;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        body.presentation-mode nav,
+        body.presentation-mode footer {
+            display: none;
+        }
+        body.presentation-mode #presentation-controls {
+            opacity: 1; visibility: visible;
+        }
+        
+        /* NEW: Style for Exit button to show in presentation mode */
+        body.presentation-mode #exit-presentation-btn {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1);
+        }
+
+        body.presentation-mode .slide { display: none; }
+        body.presentation-mode .slide.active {
+            display: block;
+            width: 90vw;
+            height: calc(100vh - 120px); /* Leave space for controls */
+            max-width: 1200px;
+            background-color: #f0f9ff;
+            padding: 40px 50px;
+            border-radius: 12px;
+            overflow-y: auto;
+            box-sizing: border-box;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        /* Increase font sizes for presentation */
+        body.presentation-mode .slide.active h1 { font-size: 3rem; line-height: 1.2; }
+        body.presentation-mode .slide.active h2 { font-size: 2.75rem; margin-bottom: 2rem; }
+        body.presentation-mode .slide.active h3 { font-size: 1.75rem; }
+        body.presentation-mode .slide.active h4 { font-size: 1.5rem; }
+        body.presentation-mode .slide.active p, 
+        body.presentation-mode .slide.active li,
+        body.presentation-mode .slide.active span,
+        body.presentation-mode .slide.active a { font-size: 1.2rem; line-height: 1.8; }
+        body.presentation-mode .slide.active .text-sm { font-size: 1.1rem; }
+        body.presentation-mode .slide.active .text-lg { font-size: 1.3rem; }
+        body.presentation-mode .slide.active .text-xl { font-size: 1.5rem; }
+        body.presentation-mode .slide.active .text-2xl { font-size: 1.75rem; }
+        body.presentation-mode .slide.active .text-3xl { font-size: 2.75rem; }
+        body.presentation-mode .slide.active .text-4xl { font-size: 3rem; }
+        
+        #toggle-mode-btn {
+            background-color: #fff;
+            color: #4338ca;
+            padding: 6px 14px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            white-space: nowrap;
+        }
+        #toggle-mode-btn:hover {
+            background-color: #eef2ff;
+            transform: scale(1.05);
+        }
+
     </style>
 </head>
 <body class="text-gray-700">
@@ -157,7 +286,7 @@
                 </svg>
                 <span class="font-bold text-xl">AI賦能金融基礎教育課程設計應用實作｜邱俐瑜</span>
             </a>
-            <div class="hidden md:flex space-x-4 lg:space-x-5">
+            <div class="hidden md:flex items-center space-x-4 lg:space-x-5">
                 <a href="#overview" class="hover:text-purple-200 transition duration-150 text-sm lg:text-base">課程概述</a>
                 <a href="#finlit-ai" class="hover:text-purple-200 transition duration-150 text-sm lg:text-base">金融素養xAI</a>
                 <a href="#ai-design" class="hover:text-purple-200 transition duration-150 text-sm lg:text-base">AI設計原則</a>
@@ -165,6 +294,7 @@
                 <a href="#ai-beginner-guide" class="hover:text-purple-200 transition duration-150 text-sm lg:text-base">AI工具入門</a>
                 <a href="#prompts" class="hover:text-purple-200 transition duration-150 text-sm lg:text-base">AI提示詞工坊</a>
                 <a href="#resources" class="hover:text-purple-200 transition duration-150 text-sm lg:text-base">教學資源</a>
+                <button id="toggle-mode-btn" class="ml-4">簡報模式</button>
             </div>
             <button id="mobile-menu-button" aria-label="開啟主選單" aria-expanded="false" aria-controls="mobile-menu" class="md:hidden text-white focus:outline-none focus:ring-2 focus:ring-purple-300 rounded">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -180,11 +310,13 @@
             <a href="#ai-beginner-guide" class="block py-2 hover:bg-purple-700 px-2 rounded transition duration-150">AI工具入門</a>
             <a href="#prompts" class="block py-2 hover:bg-purple-700 px-2 rounded transition duration-150">AI提示詞工坊</a>
             <a href="#resources" class="block py-2 hover:bg-purple-700 px-2 rounded transition duration-150">教學資源</a>
+             <div class="mt-2 pt-2 border-t border-purple-600">
+                <button id="toggle-mode-btn-mobile" class="w-full text-left py-2 hover:bg-purple-700 px-2 rounded transition duration-150">簡報模式</button>
+            </div>
         </div>
     </nav>
 
-    <!-- 頂部橫幅 -->
-    <header class="bg-white py-16 sm:py-20 px-4 shadow-md relative overflow-hidden">
+    <header class="bg-white py-16 sm:py-20 px-4 shadow-md relative overflow-hidden slide">
         <div class="absolute inset-0 opacity-10">
             <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
                 <defs>
@@ -206,9 +338,7 @@
             </div>
         </div>
     </header>
-
-    <!-- 課程概述 -->
-    <section id="overview" class="py-16 px-4 fade-in-section">
+    <section id="overview" class="py-16 px-4 fade-in-section slide">
         <div class="container mx-auto">
             <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">工作坊概述：AI點亮金融素養教學</h2>
             <div class="max-w-3xl mx-auto bg-white rounded-xl shadow-lg p-6 sm:p-10 card">
@@ -253,9 +383,7 @@
             </div>
         </div>
     </section>
-
-    <!-- 金融素養xAI -->
-    <section id="finlit-ai" class="py-16 px-4 bg-sky-50 fade-in-section">
+    <section id="finlit-ai" class="py-16 px-4 bg-sky-50 fade-in-section slide">
         <div class="container mx-auto">
             <h2 class="text-3xl font-bold text-center mb-6 text-gray-800">金融素養學習架構 × AI賦能</h2>
             <p class="text-center text-gray-600 mb-12 max-w-3xl mx-auto">
@@ -325,9 +453,7 @@
             </div>
         </div>
     </section>
-
-    <!-- AI設計原則 -->
-    <section id="ai-design" class="py-16 px-4 bg-white fade-in-section">
+    <section id="ai-design" class="py-16 px-4 bg-white fade-in-section slide">
         <div class="container mx-auto">
             <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">AI賦能課程設計原則</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 stagger-children">
@@ -355,9 +481,7 @@
             </div>
         </div>
     </section>
-
-    <!-- Gemini & NotebookLM實戰 -->
-    <section id="ai-in-action" class="py-16 px-4 bg-sky-50 fade-in-section">
+    <section id="ai-in-action" class="py-16 px-4 bg-sky-50 fade-in-section slide">
         <div class="container mx-auto">
             <h2 class="text-3xl font-bold text-center mb-4 text-gray-800">Gemini & NotebookLM 實戰應用</h2>
             <p class="text-center text-gray-600 mb-12 max-w-3xl mx-auto">
@@ -366,8 +490,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 stagger-children">
                 <!-- Gemini Card -->
                 <div class="bg-white p-6 rounded-xl shadow-xl tool-card border-indigo-500">
-                    <!-- === MODIFIED SECTION START === -->
-                    <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center mb-4">
                         <div class="flex items-center">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-indigo-600 mr-3" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M12,2C6.486,2,2,6.486,2,12s4.486,10,10,10s10-4.486,10-10S17.514,2,12,2z M12,20c-4.411,0-8-3.589-8-8s3.589-8,8-8 s8,3.589,8,8S16.411,20,12,20z"/>
@@ -377,13 +500,7 @@
                             </svg>
                             <h3 class="text-2xl font-bold text-indigo-700">Gemini：您的創意教學夥伴</h3>
                         </div>
-                        <a href="pt-gemini.html" target="_blank" rel="noopener noreferrer" title="在新分頁中開啟Gemini實作講義" class="text-gray-400 hover:text-indigo-600 transition-colors duration-200">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                            </svg>
-                        </a>
                     </div>
-                    <!-- === MODIFIED SECTION END === -->
                     <p class="text-gray-600 mb-4">Gemini能理解複雜指令、生成多樣文本、甚至程式碼，是發想課程活動、撰寫案例、設計評量的得力助手。</p>
                     <div class="space-y-3 mt-auto">
                         <div class="bg-indigo-50 p-4 rounded-lg">
@@ -407,8 +524,7 @@
 
                 <!-- NotebookLM Card -->
                 <div class="bg-white p-6 rounded-xl shadow-xl tool-card border-teal-500" style="transition-delay: 100ms;">
-                    <!-- === MODIFIED SECTION START === -->
-                    <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center mb-4">
                         <div class="flex items-center">
                              <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-teal-600 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v11.494m0 0A7.5 7.5 0 1012 6.253zM9 13.5V9.253M15 10.5V14.75m-3-7.253V3M12 21v-2.25M4.75 12H3M21 12h-1.75M5.758 5.758L4.343 4.343M18.242 5.758l1.415-1.415M5.758 18.242l-1.415 1.415M18.242 18.242l1.415 1.415" />
@@ -416,13 +532,7 @@
                             </svg>
                             <h3 class="text-2xl font-bold text-teal-700">NotebookLM：您的智能研究助理</h3>
                         </div>
-                        <a href="pt-notebooklm.html" target="_blank" rel="noopener noreferrer" title="在新分頁中開啟NotebookLM實作講義" class="text-gray-400 hover:text-teal-600 transition-colors duration-200">
-                             <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                            </svg>
-                        </a>
                     </div>
-                    <!-- === MODIFIED SECTION END === -->
                     <p class="text-gray-600 mb-4">NotebookLM能快速處理您上傳的文件資料 (PDF, Google Docs等)，提供摘要、問答、概念連結，是備課、資料分析的強大工具。</p>
                      <div class="space-y-3 mt-auto">
                         <div class="bg-teal-50 p-4 rounded-lg">
@@ -446,9 +556,7 @@
             </div>
         </div>
     </section>
-    
-    <!-- AI工具操作入門 -->
-    <section id="ai-beginner-guide" class="py-16 px-4 bg-white fade-in-section">
+    <section id="ai-beginner-guide" class="py-16 px-4 bg-white fade-in-section slide">
         <div class="container mx-auto">
             <h2 class="text-3xl font-bold text-center mb-4 text-gray-800">AI工具操作入門 (新手友善指南)</h2>
             <p class="text-center text-gray-600 mb-12 max-w-3xl mx-auto">
@@ -474,6 +582,14 @@
                         <li><strong>修改與追問：</strong>如果Gemini的回應不完全符合您的需求，您可以直接在下方繼續提問或給予更明確的指示，例如：「故事可以再活潑一點嗎？」或「請將解釋通貨膨脹的對象調整為高中生。」</li>
                         <li><strong>探索更多：</strong>嘗試不同的提問方式，例如要求Gemini扮演特定角色、生成表格、提供點子等。</li>
                     </ol>
+                    <div class="mt-auto pt-4 flex justify-end">
+                        <a href="pt-gemini.html" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-x-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition-transform duration-150 ease-in-out hover:scale-105 active:scale-100">
+                            開始實作Gemini
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                        </a>
+                    </div>
                 </div>
 
                 <!-- NotebookLM Guide Card -->
@@ -495,13 +611,21 @@
                         <li><strong>儲存筆記與新增觀點：</strong>NotebookLM會自動生成一些建議的提問或筆記。您也可以手動將重要的回答或自己的想法「新增至筆記」。</li>
                         <li><strong>多來源整合：</strong>嘗試上傳多份相關文件，NotebookLM可以跨文件進行比較和回答。</li>
                     </ol>
+                    <div class="mt-auto pt-4 flex justify-end">
+                        <a href="pt-notebooklm.html" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-x-2 rounded-md bg-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-teal-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600 transition-transform duration-150 ease-in-out hover:scale-105 active:scale-100">
+                            開始實作NotebookLM
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
-
-    <!-- AI提示詞工坊 -->
-    <section id="prompts" class="py-16 px-4 bg-sky-50 fade-in-section">
+    
+    <!-- === PROMPTS SECTION - SLIDE 1 === -->
+    <section id="prompts" class="py-16 px-4 bg-sky-50 fade-in-section slide">
         <div class="container mx-auto">
             <h2 class="text-3xl font-bold text-center mb-4 text-gray-800">AI提示詞 (Prompt) 精進工坊</h2>
             <p class="text-center text-gray-600 mb-12 max-w-3xl mx-auto">
@@ -537,8 +661,15 @@
                     <p class="text-sm text-gray-600">要求AI輸出的格式，如「條列式」、「表格」、「對話」。也可指定語氣，如「專業」、「活潑」、「同理心」。</p>
                 </div>
             </div>
+        </div>
+    </section>
+
+    <!-- === PROMPTS SECTION - SLIDE 2 (GEMINI) === -->
+    <section class="py-16 px-4 bg-sky-50 fade-in-section slide">
+        <div class="container mx-auto">
+            <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">AI提示詞精進工坊：Gemini範例</h2>
             <div class="bg-gray-50 p-6 rounded-lg shadow">
-                <h4 class="text-xl font-semibold text-gray-700 mb-3">進階提示詞範例 (Gemini):</h4>
+                <h4 class="text-xl font-semibold text-gray-700 mb-3">Gemini進階提示詞範例:</h4>
                 <div class="space-y-4">
                     <div>
                         <p class="font-medium text-gray-700">範例1 (生成教案初稿):</p>
@@ -559,7 +690,16 @@
                         </p>
                     </div>
                 </div>
-                 <h4 class="text-xl font-semibold text-gray-700 mt-6 mb-3">NotebookLM 提問技巧:</h4>
+            </div>
+        </div>
+    </section>
+
+    <!-- === PROMPTS SECTION - SLIDE 3 (NOTEBOOKLM) === -->
+    <section class="py-16 px-4 bg-sky-50 fade-in-section slide">
+        <div class="container mx-auto">
+             <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">AI提示詞精進工坊：NotebookLM範例</h2>
+             <div class="bg-gray-50 p-6 rounded-lg shadow">
+                 <h4 class="text-xl font-semibold text-gray-700 mb-3">NotebookLM進階提示詞範例:</h4>
                  <div class="space-y-4">
                     <div>
                         <p class="font-medium text-gray-700">範例1 (多文件比較):</p>
@@ -580,14 +720,13 @@
         </div>
     </section>
 
-    <!-- 教學資源 -->
-    <section id="resources" class="py-16 px-4 bg-sky-50 fade-in-section">
+    <!-- === RESOURCES SECTION - SLIDE 1 (AI TOOLS) === -->
+    <section id="resources" class="py-16 px-4 bg-sky-50 fade-in-section slide">
         <div class="container mx-auto">
             <h2 class="text-3xl font-bold text-center mb-6 text-gray-800">AI賦能教學資源庫</h2>
             <p class="text-center text-gray-600 mb-12 max-w-3xl mx-auto">
                 善用現有金融教材，並結合AI工具進行二次創作與深化，打造個人化的教學資源庫。
             </p>
-            
             <div class="mb-12">
                 <h3 class="text-2xl font-semibold text-center mb-8 text-gray-700">AI 工具平台</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 stagger-children">
@@ -615,335 +754,338 @@
                     </a>
                 </div>
             </div>
+        </div>
+    </section>
 
-            <!-- 金融基礎教育核心教材 (Restored) -->
-            <div class="mt-16">
-                <h3 class="text-2xl font-semibold text-center mb-8 text-gray-700">金融基礎教育核心教材 (可上傳至NotebookLM強化)</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 stagger-children">
-                    <!-- 金錢規劃 -->
-                    <div class="bg-white p-6 rounded-xl shadow-lg resource-card" style="border-left-color: #4338ca;">
-                        <div class="flex items-center mb-3">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-600 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h3m-3 0H9m12-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <h3 class="text-xl font-bold text-indigo-700">金錢規劃</h3>
-                        </div>
-                        <p class="text-gray-600 text-sm mb-4">核心是培養學生精打細算的理財觀念，學習區分「需要」與「想要」，掌握記帳技巧，並進行個人的財務規劃。
-                            <br><strong class="text-indigo-500">AI提示：</strong>上傳至NotebookLM，快速提問手冊內容，或請Gemini基於手冊重點生成教學活動。
-                        </p>
-                        <div class="mt-4 mb-4 border-t pt-4 flex-grow">
-                            <h4 class="text-md font-semibold text-gray-700 mb-3">精華重點：</h4>
-                            <ul class="space-y-2 text-sm text-gray-600 summary-list">
-                                <li class="flex items-start">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" /></svg>
-                                    <span><strong>消費觀念建立：</strong>透過「是需要還是想要？」活動，區分消費的必要性與慾望，並探討消費的公益面向。</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" /><path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zm-7 4a1 1 0 100 2 1 1 0 000-2zm-4-1a1 1 0 112 0 1 1 0 01-2 0z" clip-rule="evenodd" /></svg>
-                                    <span><strong>儲蓄習慣養成：</strong>學習「收入－儲蓄＝消費」理財觀念，優先儲蓄再消費，有助提早實現夢想。</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" /></svg>
-                                    <span><strong>記帳重要性與方法：</strong>了解記帳優勢，透過測驗了解理財特質，介紹紙本與數位記帳APP（如CWMoney）。</span>
-                                </li>
-                                 <li class="flex items-start">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 6a3 3 0 013-3h10a1 1 0 01.8 1.6L14.25 8l2.55 3.4A1 1 0 0116 13H6a1 1 0 00-1 1v3a1 1 0 11-2 0V6z" clip-rule="evenodd" /></svg>
-                                    <span><strong>個人與家庭財務規劃：</strong>製作支出圓餅圖，結合人生夢想、預期開銷與收入，進行現實生活財務規劃。</span>
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="space-y-3 mt-auto">
-                            <a href="https://rm.ib.gov.tw/FileSystem/FKLDoc/%E3%80%90%E9%87%91%E9%8C%A2%E8%A6%8F%E5%8A%83%E3%80%91%E6%95%99%E6%9D%90_%E6%95%99%E5%B8%AB%E6%89%8B%E5%86%8A.pdf" target="_blank" rel="noopener noreferrer" class="resource-button block w-full bg-indigo-500 text-white text-center px-4 py-2.5 rounded-lg hover:bg-indigo-600 shadow hover:shadow-md">教師手冊</a>
-                            <a href="https://rm.ib.gov.tw/FileSystem/FKLDoc/%E3%80%90%E9%87%91%E9%8C%A2%E8%A6%8F%E5%8A%83%E3%80%91%E6%95%99%E6%9D%90_%E5%AD%B8%E7%94%9F%E6%89%8B%E5%86%8A.pdf" target="_blank" rel="noopener noreferrer" class="resource-button block w-full bg-indigo-400 text-white text-center px-4 py-2.5 rounded-lg hover:bg-indigo-500 shadow hover:shadow-md">學生手冊</a>
-                        </div>
+    <!-- === RESOURCES SECTION - SLIDE 2 (CORE MATERIALS) === -->
+    <section class="py-16 px-4 bg-sky-50 fade-in-section slide">
+        <div class="container mx-auto">
+            <h3 class="text-2xl font-semibold text-center mb-8 text-gray-700">金融基礎教育核心教材 (可上傳至NotebookLM強化)</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 stagger-children">
+                <!-- 金錢規劃 -->
+                <div class="bg-white p-6 rounded-xl shadow-lg resource-card" style="border-left-color: #4338ca;">
+                    <div class="flex items-center mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-600 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h3m-3 0H9m12-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <h3 class="text-xl font-bold text-indigo-700">金錢規劃</h3>
                     </div>
-                    <!-- 信用與借貸 -->
-                    <div class="bg-white p-6 rounded-xl shadow-lg resource-card" style="border-left-color: #2563eb; transition-delay: 50ms;">
-                        <div class="flex items-center mb-3">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-600 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                            </svg>
-                            <h3 class="text-xl font-bold text-blue-700">信用與借貸</h3>
-                        </div>
-                        <p class="text-gray-600 text-sm mb-4">重點在於建立正確的信用觀念，了解借貸與信用卡的運用。
-                            <br><strong class="text-blue-500">AI提示：</strong>運用Gemini生成不同借貸情境的風險分析，NotebookLM整理相關法規。
-                        </p>
-                        <div class="mt-4 mb-4 border-t pt-4 flex-grow">
-                             <h4 class="text-md font-semibold text-gray-700 mb-3">精華重點：</h4>
-                            <ul class="space-y-2 text-sm text-gray-600 summary-list">
-                                <li class="flex items-start">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.562 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.865.802L6 10.333z" /></svg>
-                                    <span><strong>信用的重要性：</strong>透過故事闡明誠信守諾，培養個人信用。</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 00-2 2v4h16V6a2 2 0 00-2-2H4z" /><path fill-rule="evenodd" d="M18 11H2c-1.105 0-2 .895-2 2v2c0 1.105.895 2 2 2h16c1.105 0 2-.895 2-2v-2c0-1.105-.895-2-2-2zM4 13a1 1 0 100 2h1a1 1 0 100-2H4zm3 0a1 1 0 100 2h1a1 1 0 100-2H7z" clip-rule="evenodd" /></svg>
-                                    <span><strong>無現金支付工具：</strong>區分儲值卡、簽帳卡、信用卡。</span>
-                                </li>
-                                 <li class="flex items-start">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 1.944A11.954 11.954 0 012.166 5C2.056 5.649 2 6.319 2 7c0 1.569.433 2.98 1.175 4.171L6.111 15.56l1.475 2.052a1 1 0 001.732 0L10.823 15.56l2.935-4.11a1 1 0 00.147-.889c-.285-.76-.92-1.42-1.742-1.776A11.964 11.964 0 0010 8c-1.112 0-2.175.269-3.138.756L4.475 11.65A1.005 1.005 0 014 12.5v.011l1.068-1.49a1 1 0 01.72-.338h8.424a1 1 0 00.996-1.14l-.385-1.54A11.989 11.989 0 0010 6.002c-1.002 0-1.955.164-2.834.466L5.05 7.408A12.001 12.001 0 0010 1.944zM10 18a1 1 0 01.894.553l.448.894a1 1 0 01-.894 1.447H8.552a1 1 0 01-.894-1.447l.448-.894A1 1 0 0110 18z" clip-rule="evenodd" /></svg>
-                                    <span><strong>卡債問題：</strong>剖析卡債成因、後果及解決方法。</span>
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="space-y-3 mt-auto">
-                            <a href="https://rm.ib.gov.tw/FileSystem/FKLDoc/%E3%80%90%E5%80%9F%E8%B2%B8%E8%88%87%E4%BF%A1%E7%94%A8%E3%80%91%E6%95%99%E6%9D%90_%E6%95%99%E5%B8%AB%E6%89%8B%E5%86%8A.pdf" target="_blank" rel="noopener noreferrer" class="resource-button block w-full bg-blue-500 text-white text-center px-4 py-2.5 rounded-lg hover:bg-blue-600 shadow hover:shadow-md">教師手冊</a>
-                            <a href="https://rm.ib.gov.tw/FileSystem/FKLDoc/%E3%80%90%E5%80%9F%E8%B2%B8%E8%88%87%E4%BF%A1%E7%94%A8%E3%80%91%E6%95%99%E6%9D%90_%E5%AD%B8%E7%94%9F%E6%89%8B%E5%86%8A.pdf" target="_blank" rel="noopener noreferrer" class="resource-button block w-full bg-blue-400 text-white text-center px-4 py-2.5 rounded-lg hover:bg-blue-500 shadow hover:shadow-md">學生手冊</a>
-                        </div>
+                    <p class="text-gray-600 text-sm mb-4">核心是培養學生精打細算的理財觀念，學習區分「需要」與「想要」，掌握記帳技巧，並進行個人的財務規劃。
+                        <br><strong class="text-indigo-500">AI提示：</strong>上傳至NotebookLM，快速提問手冊內容，或請Gemini基於手冊重點生成教學活動。
+                    </p>
+                    <div class="mt-4 mb-4 border-t pt-4 flex-grow">
+                        <h4 class="text-md font-semibold text-gray-700 mb-3">精華重點：</h4>
+                        <ul class="space-y-2 text-sm text-gray-600 summary-list">
+                            <li class="flex items-start">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" /></svg>
+                                <span><strong>消費觀念建立：</strong>透過「是需要還是想要？」活動，區分消費的必要性與慾望，並探討消費的公益面向。</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" /><path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zm-7 4a1 1 0 100 2 1 1 0 000-2zm-4-1a1 1 0 112 0 1 1 0 01-2 0z" clip-rule="evenodd" /></svg>
+                                <span><strong>儲蓄習慣養成：</strong>學習「收入－儲蓄＝消費」理財觀念，優先儲蓄再消費，有助提早實現夢想。</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" /></svg>
+                                <span><strong>記帳重要性與方法：</strong>了解記帳優勢，透過測驗了解理財特質，介紹紙本與數位記帳APP（如CWMoney）。</span>
+                            </li>
+                             <li class="flex items-start">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 6a3 3 0 013-3h10a1 1 0 01.8 1.6L14.25 8l2.55 3.4A1 1 0 0116 13H6a1 1 0 00-1 1v3a1 1 0 11-2 0V6z" clip-rule="evenodd" /></svg>
+                                <span><strong>個人與家庭財務規劃：</strong>製作支出圓餅圖，結合人生夢想、預期開銷與收入，進行現實生活財務規劃。</span>
+                            </li>
+                        </ul>
                     </div>
-                    <!-- 保險與風險管理 -->
-                    <div class="bg-white p-6 rounded-xl shadow-lg resource-card" style="border-left-color: #059669; transition-delay: 100ms;">
-                         <div class="flex items-center mb-3">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-600 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                            </svg>
-                            <h3 class="text-xl font-bold text-green-700">保險與風險管理</h3>
-                        </div>
-                        <p class="text-gray-600 text-sm mb-4">主要探討風險、保險的概念，以及如何進行風險管理和保險規劃。
-                            <br><strong class="text-green-500">AI提示：</strong>用Gemini生成保險案例分析，NotebookLM建立不同保險產品比較表。
-                        </p>
-                         <div class="mt-4 mb-4 border-t pt-4 flex-grow">
-                            <h4 class="text-md font-semibold text-gray-700 mb-3">精華重點：</h4>
-                             <ul class="space-y-2 text-sm text-gray-600 summary-list">
-                                <li class="flex items-start">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" /></svg>
-                                    <span><strong>風險與危險的辨識：</strong>理解風險為可能導致損失且不確定的事件。</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path d="M5 3a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2H5zm9 4H6v2h8V7zm0 4H6v2h8v-2z" /></svg>
-                                    <span><strong>風險管理與四象限：</strong>規避、降低、轉嫁、自承。</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" /></svg>
-                                    <span><strong>保險種類與規劃：</strong>人身、財產、責任風險；社會、政策性、商業保險。</span>
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="space-y-3 mt-auto">
-                            <a href="https://rm.ib.gov.tw/FileSystem/FKLDoc/%E3%80%90%E4%BF%9D%E9%9A%AA%E8%88%87%E9%A2%A8%E9%9A%AA%E7%AE%A1%E7%90%86%E3%80%91%E6%95%99%E6%9D%90_%E6%95%99%E5%B8%AB%E6%89%8B%E5%86%8A.pdf" target="_blank" rel="noopener noreferrer" class="resource-button block w-full bg-green-500 text-white text-center px-4 py-2.5 rounded-lg hover:bg-green-600 shadow hover:shadow-md">教師手冊</a>
-                            <a href="https://rm.ib.gov.tw/FileSystem/FKLDoc/%E3%80%90%E4%BF%9D%E9%9A%AA%E8%88%87%E9%A2%A8%E9%9A%AA%E7%AE%A1%E7%90%86%E3%80%91%E6%95%99%E6%9D%90_%E5%AD%B8%E7%94%9F%E6%89%8B%E5%86%8A.pdf" target="_blank" rel="noopener noreferrer" class="resource-button block w-full bg-green-400 text-white text-center px-4 py-2.5 rounded-lg hover:bg-green-500 shadow hover:shadow-md">學生手冊</a>
-                        </div>
-                    </div>
-                    <!-- 理財投資 -->
-                    <div class="bg-white p-6 rounded-xl shadow-lg resource-card" style="border-left-color: #7e22ce; transition-delay: 150ms;">
-                        <div class="flex items-center mb-3">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-purple-600 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                            </svg>
-                            <h3 class="text-xl font-bold text-purple-700">理財投資</h3>
-                        </div>
-                        <p class="text-gray-600 text-sm mb-4">旨在引導學生認識投資的風險與獲利，學習成本概念。
-                            <br><strong class="text-purple-500">AI提示：</strong>Gemini模擬投資情境，NotebookLM整理不同投資工具資訊。
-                        </p>
-                        <div class="mt-4 mb-4 border-t pt-4 flex-grow">
-                             <h4 class="text-md font-semibold text-gray-700 mb-3">精華重點：</h4>
-                             <ul class="space-y-2 text-sm text-gray-600 summary-list">
-                                <li class="flex items-start">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 7a.75.75 0 000 1.5h6a.75.75 0 000-1.5H7zM7 11a.75.75 0 000 1.5h3a.75.75 0 000-1.5H7z" clip-rule="evenodd" /></svg>
-                                    <span><strong>投資風險與獲利概念：</strong>「投資一定有風險，零風險即詐騙」。</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 100 4v2a2 2 0 01-2 2H4a2 2 0 01-2-2v-2a2 2 0 100-4V6z" /></svg>
-                                    <span><strong>成本與獲利計算：</strong>區分外顯成本和隱形成本（機會成本）。</span>
-                                </li>
-                                 <li class="flex items-start">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 2-2-1-1.257-.251A6 6 0 1118 8zm-6-4a1 1 0 100 2 1 1 0 000-2zM6 8a1 1 0 100 2 1 1 0 000-2zm6 0a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd" /></svg>
-                                    <span><strong>理財投資考量因素：</strong>風險承受度、收入、負債、年紀、目標。</span>
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="space-y-3 mt-auto">
-                            <a href="https://rm.ib.gov.tw/FileSystem/FKLDoc/%E3%80%90%E7%90%86%E8%B2%A1%E6%8A%95%E8%B3%87%E3%80%91%E6%95%99%E6%9D%90_%E6%95%99%E5%B8%AB%E6%89%8B%E5%86%8A.pdf" target="_blank" rel="noopener noreferrer" class="resource-button block w-full bg-purple-500 text-white text-center px-4 py-2.5 rounded-lg hover:bg-purple-600 shadow hover:shadow-md">教師手冊</a>
-                            <a href="https://rm.ib.gov.tw/FileSystem/FKLDoc/%E3%80%90%E7%90%86%E8%B2%A1%E6%8A%95%E8%B3%87%E3%80%91%E6%95%99%E6%9D%90_%E5%AD%B8%E7%94%9F%E6%89%8B%E5%86%8A.pdf" target="_blank" rel="noopener noreferrer" class="resource-button block w-full bg-purple-400 text-white text-center px-4 py-2.5 rounded-lg hover:bg-purple-500 shadow hover:shadow-md">學生手冊</a>
-                        </div>
-                    </div>
-                    <!-- 金融消費保護 -->
-                    <div class="bg-white p-6 rounded-xl shadow-lg resource-card" style="border-left-color: #db2777; transition-delay: 200ms;">
-                        <div class="flex items-center mb-3">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-pink-600 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                            </svg>
-                             <h3 class="text-xl font-bold text-pink-700">金融消費保護</h3>
-                        </div>
-                        <p class="text-gray-600 text-sm mb-4">旨在教育學生認識金融消費權益，了解金融剝削與爭議處理機制。
-                            <br><strong class="text-pink-500">AI提示：</strong>Gemini生成金融詐騙案例與應對策略，NotebookLM整理申訴管道資訊。
-                        </p>
-                         <div class="mt-4 mb-4 border-t pt-4 flex-grow">
-                            <h4 class="text-md font-semibold text-gray-700 mb-3">精華重點：</h4>
-                            <ul class="space-y-2 text-sm text-gray-600 summary-list">
-                                <li class="flex items-start">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-pink-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg>
-                                    <span><strong>金融剝削與風險：</strong>介紹金融剝削定義與關注高齡者風險。</span>
-                                </li>
-                                 <li class="flex items-start">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-pink-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 16c1.669 0 3.218-.51 4.5-1.385A7.962 7.962 0 0114.5 16c1.255 0 2.443-.29 3.5-.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" /></svg>
-                                    <span><strong>金融消費者權益與義務：</strong>《金融消費者保護法》、廣告真實、KYC、KYP。</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-pink-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path d="M2.003 5.884L10 2.5l7.997 3.384A1 1 0 0019 7V15a1 1 0 001-1V6a1 1 0 00-.003-.116l-7.997-3.384a1 1 0 00-.998-.001L1.003 5.884A1 1 0 000 7v8a1 1 0 001 1h18a1 1 0 001-1V7a1 1 0 00-.003-.116l-7.997 3.384a1 1 0 01-.998 0L2.003 10.116A1 1 0 001 10V7a1 1 0 01.003-.116z" /><path d="M11 12.158V15.5a1 1 0 01-2 0v-3.342L2.003 9.26A1 1 0 001 10v5a2 2 0 002 2h14a2 2 0 002-2v-5a1 1 0 00-.997-.74L11 12.158z" /></svg>
-                                    <span><strong>爭議處理流程：</strong>先向金融服務業申訴，後可向評議中心申請評議。</span>
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="space-y-3 mt-auto">
-                            <a href="https://rm.ib.gov.tw/FileSystem/FKLDoc/%E3%80%90%E9%87%91%E8%9E%8D%E6%B6%88%E8%B2%BB%E4%BF%9D%E8%AD%B7%E3%80%91%E6%95%99%E6%9D%90_%E6%95%99%E5%B8%AB%E6%89%8B%E5%86%8A.pdf" target="_blank" rel="noopener noreferrer" class="resource-button block w-full bg-pink-500 text-white text-center px-4 py-2.5 rounded-lg hover:bg-pink-600 shadow hover:shadow-md">教師手冊</a>
-                            <a href="https://rm.ib.gov.tw/FileSystem/FKLDoc/%E3%80%90%E9%87%91%E8%9E%8D%E6%B6%88%E8%B2%BB%E4%BF%9D%E8%AD%B7%E3%80%91%E6%95%99%E6%9D%90_%E5%AD%B8%E7%94%9F%E6%89%8B%E5%86%8A.pdf" target="_blank" rel="noopener noreferrer" class="resource-button block w-full bg-pink-400 text-white text-center px-4 py-2.5 rounded-lg hover:bg-pink-500 shadow hover:shadow-md">學生手冊</a>
-                        </div>
-                    </div>
-                    <!-- 洗錢防制 -->
-                    <div class="bg-white p-6 rounded-xl shadow-lg resource-card" style="border-left-color: #0d9488; transition-delay: 250ms;">
-                        <div class="flex items-center mb-3">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-teal-600 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                               <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M3.25 15.75l6.165-4.526A2.25 2.25 0 0112 10.5h0a2.25 2.25 0 012.585.724L20.75 15.75M4.5 19.5h15a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5h-15A1.5 1.5 0 003 6v12a1.5 1.5 0 001.5 1.5z"/>
-                            </svg>
-                             <h3 class="text-xl font-bold text-teal-700">洗錢防制</h3>
-                        </div>
-                        <p class="text-gray-600 text-sm mb-4">著重於介紹洗錢的定義、手法及防範措施。
-                            <br><strong class="text-teal-500">AI提示：</strong>NotebookLM整理洗錢案例資料庫，Gemini生成防制洗錢宣導短劇腳本。
-                        </p>
-                         <div class="mt-4 mb-4 border-t pt-4 flex-grow">
-                            <h4 class="text-md font-semibold text-gray-700 mb-3">精華重點：</h4>
-                            <ul class="space-y-2 text-sm text-gray-600 summary-list">
-                                <li class="flex items-start">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-teal-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd" /></svg>
-                                    <span><strong>洗錢的定義與行為：</strong>掩飾或隱匿特定犯罪所得來源。</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-teal-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" /><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" /></svg>
-                                    <span><strong>洗錢的案例與手法：</strong>利用人頭帳戶、虛擬貨幣等。</span>
-                                </li>
-                                 <li class="flex items-start">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-teal-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd" /></svg>
-                                    <span><strong>防制洗錢「三不三要」：</strong>不借證件、不借帳戶、不替他人提現。</span>
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="space-y-3 mt-auto">
-                            <a href="https://rm.ib.gov.tw/FileSystem/FKLDoc/%E3%80%90%E6%B4%97%E9%8C%A2%E9%98%B2%E5%88%B6%E3%80%91%E6%95%99%E6%9D%90_%E6%95%99%E5%B8%AB%E6%89%8B%E5%86%8A.pdf" target="_blank" rel="noopener noreferrer" class="resource-button block w-full bg-teal-500 text-white text-center px-4 py-2.5 rounded-lg hover:bg-teal-600 shadow hover:shadow-md">教師手冊</a>
-                            <a href="https://rm.ib.gov.tw/FileSystem/FKLDoc/%E3%80%90%E6%B4%97%E9%8C%A2%E9%98%B2%E5%88%B6%E3%80%91%E6%95%99%E6%9D%90_%E5%AD%B8%E7%94%9F%E6%89%8B%E5%86%8A.pdf" target="_blank" rel="noopener noreferrer" class="resource-button block w-full bg-teal-400 text-white text-center px-4 py-2.5 rounded-lg hover:bg-teal-500 shadow hover:shadow-md">學生手冊</a>
-                        </div>
+                    <div class="space-y-3 mt-auto">
+                        <a href="https://rm.ib.gov.tw/FileSystem/FKLDoc/%E3%80%90%E9%87%91%E9%8C%A2%E8%A6%8F%E5%8A%83%E3%80%91%E6%95%99%E6%9D%90_%E6%95%99%E5%B8%AB%E6%89%8B%E5%86%8A.pdf" target="_blank" rel="noopener noreferrer" class="resource-button block w-full bg-indigo-500 text-white text-center px-4 py-2.5 rounded-lg hover:bg-indigo-600 shadow hover:shadow-md">教師手冊</a>
+                        <a href="https://rm.ib.gov.tw/FileSystem/FKLDoc/%E3%80%90%E9%87%91%E9%8C%A2%E8%A6%8F%E5%8A%83%E3%80%91%E6%95%99%E6%9D%90_%E5%AD%B8%E7%94%9F%E6%89%8B%E5%86%8A.pdf" target="_blank" rel="noopener noreferrer" class="resource-button block w-full bg-indigo-400 text-white text-center px-4 py-2.5 rounded-lg hover:bg-indigo-500 shadow hover:shadow-md">學生手冊</a>
                     </div>
                 </div>
-            </div>
-            
-            <!-- 教學影片 (Restored) -->
-            <div class="mt-16"> 
-                <h3 class="text-2xl font-semibold text-center mb-8 text-gray-700">主題教材：教學影片 (AI輔助學習與討論)</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 stagger-children">
-                    <!-- 國小 -->
-                    <div class="bg-white p-6 rounded-xl shadow-lg resource-card" style="border-left-color: #f59e0b;"> <!-- Amber color -->
-                        <div class="flex items-center mb-3">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-amber-500 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <h4 class="text-xl font-bold text-amber-700">理財成長記 (國小)</h4>
-                        </div>
-                        <p class="text-gray-600 text-sm mb-4">主題：借貸與信用
-                            <br><strong class="text-amber-600">AI提示：</strong>觀看後可運用Gemini設計討論題目或撰寫觀後心得摘要。
-                        </p>
-                        <div class="mt-auto">
-                             <a href="https://fsctw.sharepoint.com/:v:/s/fscvideo.fsc.gov.tw/EY3vyGMGIQ5As7n4a45irTkB3AfNSq7AodKtGWg7zNMSyw?e=viJSSG" target="_blank" rel="noopener noreferrer" class="resource-button block w-full bg-amber-500 text-white text-center px-4 py-2.5 rounded-lg hover:bg-amber-600 shadow hover:shadow-md">
-                                觀看影片
-                            </a>
-                        </div>
+                <!-- 信用與借貸 -->
+                <div class="bg-white p-6 rounded-xl shadow-lg resource-card" style="border-left-color: #2563eb; transition-delay: 50ms;">
+                    <div class="flex items-center mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-600 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                        </svg>
+                        <h3 class="text-xl font-bold text-blue-700">信用與借貸</h3>
                     </div>
-                    <!-- 國中 1 -->
-                    <div class="bg-white p-6 rounded-xl shadow-lg resource-card" style="border-left-color: #10b981; transition-delay: 50ms;"> <!-- Emerald color -->
-                        <div class="flex items-center mb-3">
-                             <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-emerald-500 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <h4 class="text-xl font-bold text-emerald-700">家的撲滿 (國中)</h4>
-                        </div>
-                        <p class="text-gray-600 text-sm mb-4">主題：理財投資
-                           <br><strong class="text-emerald-600">AI提示：</strong>用Gemini分析影片中投資決策，或生成延伸思考問題。
-                        </p>
-                        <div class="mt-auto">
-                            <a href="https://fsctw.sharepoint.com/:v:/s/fscvideo.fsc.gov.tw/EYPSnM886wVDq-_AMmOD-10B0d_JcHFcFYF1d3QPyqG6lA?e=b0ae8cc2" target="_blank" rel="noopener noreferrer" class="resource-button block w-full bg-emerald-500 text-white text-center px-4 py-2.5 rounded-lg hover:bg-emerald-600 shadow hover:shadow-md">
-                                觀看影片
-                            </a>
-                        </div>
+                    <p class="text-gray-600 text-sm mb-4">重點在於建立正確的信用觀念，了解借貸與信用卡的運用。
+                        <br><strong class="text-blue-500">AI提示：</strong>運用Gemini生成不同借貸情境的風險分析，NotebookLM整理相關法規。
+                    </p>
+                    <div class="mt-4 mb-4 border-t pt-4 flex-grow">
+                         <h4 class="text-md font-semibold text-gray-700 mb-3">精華重點：</h4>
+                        <ul class="space-y-2 text-sm text-gray-600 summary-list">
+                            <li class="flex items-start">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.562 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.865.802L6 10.333z" /></svg>
+                                <span><strong>信用的重要性：</strong>透過故事闡明誠信守諾，培養個人信用。</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 00-2 2v4h16V6a2 2 0 00-2-2H4z" /><path fill-rule="evenodd" d="M18 11H2c-1.105 0-2 .895-2 2v2c0 1.105.895 2 2 2h16c1.105 0 2-.895 2-2v-2c0-1.105-.895-2-2-2zM4 13a1 1 0 100 2h1a1 1 0 100-2H4zm3 0a1 1 0 100 2h1a1 1 0 100-2H7z" clip-rule="evenodd" /></svg>
+                                <span><strong>無現金支付工具：</strong>區分儲值卡、簽帳卡、信用卡。</span>
+                            </li>
+                             <li class="flex items-start">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 1.944A11.954 11.954 0 012.166 5C2.056 5.649 2 6.319 2 7c0 1.569.433 2.98 1.175 4.171L6.111 15.56l1.475 2.052a1 1 0 001.732 0L10.823 15.56l2.935-4.11a1 1 0 00.147-.889c-.285-.76-.92-1.42-1.742-1.776A11.964 11.964 0 0010 8c-1.112 0-2.175.269-3.138.756L4.475 11.65A1.005 1.005 0 014 12.5v.011l1.068-1.49a1 1 0 01.72-.338h8.424a1 1 0 00.996-1.14l-.385-1.54A11.989 11.989 0 0010 6.002c-1.002 0-1.955.164-2.834.466L5.05 7.408A12.001 12.001 0 0010 1.944zM10 18a1 1 0 01.894.553l.448.894a1 1 0 01-.894 1.447H8.552a1 1 0 01-.894-1.447l.448-.894A1 1 0 0110 18z" clip-rule="evenodd" /></svg>
+                                <span><strong>卡債問題：</strong>剖析卡債成因、後果及解決方法。</span>
+                            </li>
+                        </ul>
                     </div>
-                     <!-- 國中 2 -->
-                    <div class="bg-white p-6 rounded-xl shadow-lg resource-card" style="border-left-color: #0ea5e9; transition-delay: 100ms;"> <!-- Sky color -->
-                        <div class="flex items-center mb-3">
-                             <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-sky-500 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <h4 class="text-xl font-bold text-sky-700">支付的選擇 (國中)</h4>
-                        </div>
-                        <p class="text-gray-600 text-sm mb-4">主題：金錢規劃
-                            <br><strong class="text-sky-600">AI提示：</strong>利用NotebookLM整理影片中不同支付方式的優缺點，Gemini生成比較表格。
-                        </p>
-                         <div class="mt-auto">
-                             <a href="https://fsctw.sharepoint.com/:v:/s/fscvideo.fsc.gov.tw/Ec4scKry43ZGta3OccuSwikBp3xDR6K47ohEbI3EhuqNhA?e=6X8kNO" target="_blank" rel="noopener noreferrer" class="resource-button block w-full bg-sky-500 text-white text-center px-4 py-2.5 rounded-lg hover:bg-sky-600 shadow hover:shadow-md">
-                                觀看影片
-                            </a>
-                        </div>
+                    <div class="space-y-3 mt-auto">
+                        <a href="https://rm.ib.gov.tw/FileSystem/FKLDoc/%E3%80%90%E5%80%9F%E8%B2%B8%E8%88%87%E4%BF%A1%E7%94%A8%E3%80%91%E6%95%99%E6%9D%90_%E6%95%99%E5%B8%AB%E6%89%8B%E5%86%8A.pdf" target="_blank" rel="noopener noreferrer" class="resource-button block w-full bg-blue-500 text-white text-center px-4 py-2.5 rounded-lg hover:bg-blue-600 shadow hover:shadow-md">教師手冊</a>
+                        <a href="https://rm.ib.gov.tw/FileSystem/FKLDoc/%E3%80%90%E5%80%9F%E8%B2%B8%E8%88%87%E4%BF%A1%E7%94%A8%E3%80%91%E6%95%99%E6%9D%90_%E5%AD%B8%E7%94%9F%E6%89%8B%E5%86%8A.pdf" target="_blank" rel="noopener noreferrer" class="resource-button block w-full bg-blue-400 text-white text-center px-4 py-2.5 rounded-lg hover:bg-blue-500 shadow hover:shadow-md">學生手冊</a>
                     </div>
-                    <!-- 高中 1 -->
-                    <div class="bg-white p-6 rounded-xl shadow-lg resource-card" style="border-left-color: #ef4444; transition-delay: 150ms;"> <!-- Red color -->
-                        <div class="flex items-center mb-3">
-                             <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-500 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <h4 class="text-xl font-bold text-red-700">曼尼特務 (高中)</h4>
-                        </div>
-                        <p class="text-gray-600 text-sm mb-4">主題：理財投資
-                            <br><strong class="text-red-600">AI提示：</strong>讓Gemini扮演影片中的角色，進行問答互動或情境延伸。
-                        </p>
-                         <div class="mt-auto">
-                             <a href="https://fsctw.sharepoint.com/:v:/s/fscvideo.fsc.gov.tw/EQgvTHJPQgROs7TiAL1DhBQBvnqFCBD6_sfqoIEMIEgb0A?e=iaeee0" target="_blank" rel="noopener noreferrer" class="resource-button block w-full bg-red-500 text-white text-center px-4 py-2.5 rounded-lg hover:bg-red-600 shadow hover:shadow-md">
-                                觀看影片
-                            </a>
-                        </div>
+                </div>
+                <!-- 保險與風險管理 -->
+                <div class="bg-white p-6 rounded-xl shadow-lg resource-card" style="border-left-color: #059669; transition-delay: 100ms;">
+                     <div class="flex items-center mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-600 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                        <h3 class="text-xl font-bold text-green-700">保險與風險管理</h3>
                     </div>
-                     <!-- 高中 2 -->
-                    <div class="bg-white p-6 rounded-xl shadow-lg resource-card" style="border-left-color: #8b5cf6; transition-delay: 200ms;"> <!-- Violet color -->
-                        <div class="flex items-center mb-3">
-                             <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-violet-500 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <h4 class="text-xl font-bold text-violet-700">夢想的起點 (高中)</h4>
-                        </div>
-                        <p class="text-gray-600 text-sm mb-4">主題：借貸與金融信用
-                             <br><strong class="text-violet-600">AI提示：</strong>用NotebookLM整理影片中關於信用的關鍵點，Gemini生成相關法律條文的白話解釋。
-                        </p>
-                         <div class="mt-auto">
-                            <a href="https://fsctw.sharepoint.com/:v:/s/fscvideo.fsc.gov.tw/EfMVB9b5o0JBs964Q8lX54wBSeVboSkFH86Wy6dARiVsBQ?e=eoE2Nm" target="_blank" rel="noopener noreferrer" class="resource-button block w-full bg-violet-500 text-white text-center px-4 py-2.5 rounded-lg hover:bg-violet-600 shadow hover:shadow-md">
-                                觀看影片
-                            </a>
-                        </div>
+                    <p class="text-gray-600 text-sm mb-4">主要探討風險、保險的概念，以及如何進行風險管理和保險規劃。
+                        <br><strong class="text-green-500">AI提示：</strong>用Gemini生成保險案例分析，NotebookLM建立不同保險產品比較表。
+                    </p>
+                     <div class="mt-4 mb-4 border-t pt-4 flex-grow">
+                        <h4 class="text-md font-semibold text-gray-700 mb-3">精華重點：</h4>
+                         <ul class="space-y-2 text-sm text-gray-600 summary-list">
+                            <li class="flex items-start">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" /></svg>
+                                <span><strong>風險與危險的辨識：</strong>理解風險為可能導致損失且不確定的事件。</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path d="M5 3a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2H5zm9 4H6v2h8V7zm0 4H6v2h8v-2z" /></svg>
+                                <span><strong>風險管理與四象限：</strong>規避、降低、轉嫁、自承。</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" /></svg>
+                                <span><strong>保險種類與規劃：</strong>人身、財產、責任風險；社會、政策性、商業保險。</span>
+                            </li>
+                        </ul>
                     </div>
-                     <!-- 高中 3 -->
-                    <div class="bg-white p-6 rounded-xl shadow-lg resource-card" style="border-left-color: #ec4899; transition-delay: 250ms;"> <!-- Pink color (from theme) -->
-                        <div class="flex items-center mb-3">
-                             <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-pink-500 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <h4 class="text-xl font-bold text-pink-700">新手上路 (高中)</h4>
-                        </div>
-                        <p class="text-gray-600 text-sm mb-4">主題：保險與風險管理
-                            <br><strong class="text-pink-600">AI提示：</strong>Gemini生成不同風險情境，讓學生思考應對的保險類型。
-                        </p>
-                         <div class="mt-auto">
-                             <a href="https://fsctw.sharepoint.com/:v:/s/fscvideo.fsc.gov.tw/EZsf8_W0GExDllE7sxPyHYEB2qavEUH0iHOAqXkAMukatw?e=lvqeFv" target="_blank" rel="noopener noreferrer" class="resource-button block w-full bg-pink-500 text-white text-center px-4 py-2.5 rounded-lg hover:bg-pink-600 shadow hover:shadow-md">
-                                觀看影片
-                            </a>
-                        </div>
+                    <div class="space-y-3 mt-auto">
+                        <a href="https://rm.ib.gov.tw/FileSystem/FKLDoc/%E3%80%90%E4%BF%9D%E9%9A%AA%E8%88%87%E9%A2%A8%E9%9A%AA%E7%AE%A1%E7%90%86%E3%80%91%E6%95%99%E6%9D%90_%E6%95%99%E5%B8%AB%E6%89%8B%E5%86%8A.pdf" target="_blank" rel="noopener noreferrer" class="resource-button block w-full bg-green-500 text-white text-center px-4 py-2.5 rounded-lg hover:bg-green-600 shadow hover:shadow-md">教師手冊</a>
+                        <a href="https://rm.ib.gov.tw/FileSystem/FKLDoc/%E3%80%90%E4%BF%9D%E9%9A%AA%E8%88%87%E9%A2%A8%E9%9A%AA%E7%AE%A1%E7%90%86%E3%80%91%E6%95%99%E6%9D%90_%E5%AD%B8%E7%94%9F%E6%89%8B%E5%86%8A.pdf" target="_blank" rel="noopener noreferrer" class="resource-button block w-full bg-green-400 text-white text-center px-4 py-2.5 rounded-lg hover:bg-green-500 shadow hover:shadow-md">學生手冊</a>
+                    </div>
+                </div>
+                <!-- 理財投資 -->
+                <div class="bg-white p-6 rounded-xl shadow-lg resource-card" style="border-left-color: #7e22ce; transition-delay: 150ms;">
+                    <div class="flex items-center mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-purple-600 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                        </svg>
+                        <h3 class="text-xl font-bold text-purple-700">理財投資</h3>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-4">旨在引導學生認識投資的風險與獲利，學習成本概念。
+                        <br><strong class="text-purple-500">AI提示：</strong>Gemini模擬投資情境，NotebookLM整理不同投資工具資訊。
+                    </p>
+                    <div class="mt-4 mb-4 border-t pt-4 flex-grow">
+                         <h4 class="text-md font-semibold text-gray-700 mb-3">精華重點：</h4>
+                         <ul class="space-y-2 text-sm text-gray-600 summary-list">
+                            <li class="flex items-start">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 7a.75.75 0 000 1.5h6a.75.75 0 000-1.5H7zM7 11a.75.75 0 000 1.5h3a.75.75 0 000-1.5H7z" clip-rule="evenodd" /></svg>
+                                <span><strong>投資風險與獲利概念：</strong>「投資一定有風險，零風險即詐騙」。</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 100 4v2a2 2 0 01-2 2H4a2 2 0 01-2-2v-2a2 2 0 100-4V6z" /></svg>
+                                <span><strong>成本與獲利計算：</strong>區分外顯成本和隱形成本（機會成本）。</span>
+                            </li>
+                             <li class="flex items-start">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 2-2-1-1.257-.251A6 6 0 1118 8zm-6-4a1 1 0 100 2 1 1 0 000-2zM6 8a1 1 0 100 2 1 1 0 000-2zm6 0a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd" /></svg>
+                                <span><strong>理財投資考量因素：</strong>風險承受度、收入、負債、年紀、目標。</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="space-y-3 mt-auto">
+                        <a href="https://rm.ib.gov.tw/FileSystem/FKLDoc/%E3%80%90%E7%90%86%E8%B2%A1%E6%8A%95%E8%B3%87%E3%80%91%E6%95%99%E6%9D%90_%E6%95%99%E5%B8%AB%E6%89%8B%E5%86%8A.pdf" target="_blank" rel="noopener noreferrer" class="resource-button block w-full bg-purple-500 text-white text-center px-4 py-2.5 rounded-lg hover:bg-purple-600 shadow hover:shadow-md">教師手冊</a>
+                        <a href="https://rm.ib.gov.tw/FileSystem/FKLDoc/%E3%80%90%E7%90%86%E8%B2%A1%E6%8A%95%E8%B3%87%E3%80%91%E6%95%99%E6%9D%90_%E5%AD%B8%E7%94%9F%E6%89%8B%E5%86%8A.pdf" target="_blank" rel="noopener noreferrer" class="resource-button block w-full bg-purple-400 text-white text-center px-4 py-2.5 rounded-lg hover:bg-purple-500 shadow hover:shadow-md">學生手冊</a>
+                    </div>
+                </div>
+                <!-- 金融消費保護 -->
+                <div class="bg-white p-6 rounded-xl shadow-lg resource-card" style="border-left-color: #db2777; transition-delay: 200ms;">
+                    <div class="flex items-center mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-pink-600 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                         <h3 class="text-xl font-bold text-pink-700">金融消費保護</h3>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-4">旨在教育學生認識金融消費權益，了解金融剝削與爭議處理機制。
+                        <br><strong class="text-pink-500">AI提示：</strong>Gemini生成金融詐騙案例與應對策略，NotebookLM整理申訴管道資訊。
+                    </p>
+                     <div class="mt-4 mb-4 border-t pt-4 flex-grow">
+                        <h4 class="text-md font-semibold text-gray-700 mb-3">精華重點：</h4>
+                        <ul class="space-y-2 text-sm text-gray-600 summary-list">
+                            <li class="flex items-start">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-pink-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg>
+                                <span><strong>金融剝削與風險：</strong>介紹金融剝削定義與關注高齡者風險。</span>
+                            </li>
+                             <li class="flex items-start">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-pink-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 16c1.669 0 3.218-.51 4.5-1.385A7.962 7.962 0 0114.5 16c1.255 0 2.443-.29 3.5-.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" /></svg>
+                                <span><strong>金融消費者權益與義務：</strong>《金融消費者保護法》、廣告真實、KYC、KYP。</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-pink-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path d="M2.003 5.884L10 2.5l7.997 3.384A1 1 0 0019 7V15a1 1 0 001-1V6a1 1 0 00-.003-.116l-7.997-3.384a1 1 0 00-.998-.001L1.003 5.884A1 1 0 000 7v8a1 1 0 001 1h18a1 1 0 001-1V7a1 1 0 00-.003-.116l-7.997 3.384a1 1 0 01-.998 0L2.003 10.116A1 1 0 001 10V7a1 1 0 01.003-.116z" /><path d="M11 12.158V15.5a1 1 0 01-2 0v-3.342L2.003 9.26A1 1 0 001 10v5a2 2 0 002 2h14a2 2 0 002-2v-5a1 1 0 00-.997-.74L11 12.158z" /></svg>
+                                <span><strong>爭議處理流程：</strong>先向金融服務業申訴，後可向評議中心申請評議。</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="space-y-3 mt-auto">
+                        <a href="https://rm.ib.gov.tw/FileSystem/FKLDoc/%E3%80%90%E9%87%91%E8%9E%8D%E6%B6%88%E8%B2%BB%E4%BF%9D%E8%AD%B7%E3%80%91%E6%95%99%E6%9D%90_%E6%95%99%E5%B8%AB%E6%89%8B%E5%86%8A.pdf" target="_blank" rel="noopener noreferrer" class="resource-button block w-full bg-pink-500 text-white text-center px-4 py-2.5 rounded-lg hover:bg-pink-600 shadow hover:shadow-md">教師手冊</a>
+                        <a href="https://rm.ib.gov.tw/FileSystem/FKLDoc/%E3%80%90%E9%87%91%E8%9E%8D%E6%B6%88%E8%B2%BB%E4%BF%9D%E8%AD%B7%E3%80%91%E6%95%99%E6%9D%90_%E5%AD%B8%E7%94%9F%E6%89%8B%E5%86%8A.pdf" target="_blank" rel="noopener noreferrer" class="resource-button block w-full bg-pink-400 text-white text-center px-4 py-2.5 rounded-lg hover:bg-pink-500 shadow hover:shadow-md">學生手冊</a>
+                    </div>
+                </div>
+                <!-- 洗錢防制 -->
+                <div class="bg-white p-6 rounded-xl shadow-lg resource-card" style="border-left-color: #0d9488; transition-delay: 250ms;">
+                    <div class="flex items-center mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-teal-600 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                           <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M3.25 15.75l6.165-4.526A2.25 2.25 0 0112 10.5h0a2.25 2.25 0 012.585.724L20.75 15.75M4.5 19.5h15a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5h-15A1.5 1.5 0 003 6v12a1.5 1.5 0 001.5 1.5z"/>
+                        </svg>
+                         <h3 class="text-xl font-bold text-teal-700">洗錢防制</h3>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-4">著重於介紹洗錢的定義、手法及防範措施。
+                        <br><strong class="text-teal-500">AI提示：</strong>NotebookLM整理洗錢案例資料庫，Gemini生成防制洗錢宣導短劇腳本。
+                    </p>
+                     <div class="mt-4 mb-4 border-t pt-4 flex-grow">
+                        <h4 class="text-md font-semibold text-gray-700 mb-3">精華重點：</h4>
+                        <ul class="space-y-2 text-sm text-gray-600 summary-list">
+                            <li class="flex items-start">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-teal-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd" /></svg>
+                                <span><strong>洗錢的定義與行為：</strong>掩飾或隱匿特定犯罪所得來源。</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-teal-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" /><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" /></svg>
+                                <span><strong>洗錢的案例與手法：</strong>利用人頭帳戶、虛擬貨幣等。</span>
+                            </li>
+                             <li class="flex items-start">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-teal-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd" /></svg>
+                                <span><strong>防制洗錢「三不三要」：</strong>不借證件、不借帳戶、不替他人提現。</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="space-y-3 mt-auto">
+                        <a href="https://rm.ib.gov.tw/FileSystem/FKLDoc/%E3%80%90%E6%B4%97%E9%8C%A2%E9%98%B2%E5%88%B6%E3%80%91%E6%95%99%E6%9D%90_%E6%95%99%E5%B8%AB%E6%89%8B%E5%86%8A.pdf" target="_blank" rel="noopener noreferrer" class="resource-button block w-full bg-teal-500 text-white text-center px-4 py-2.5 rounded-lg hover:bg-teal-600 shadow hover:shadow-md">教師手冊</a>
+                        <a href="https://rm.ib.gov.tw/FileSystem/FKLDoc/%E3%80%90%E6%B4%97%E9%8C%A2%E9%98%B2%E5%88%B6%E3%80%91%E6%95%99%E6%9D%90_%E5%AD%B8%E7%94%9F%E6%89%8B%E5%86%8A.pdf" target="_blank" rel="noopener noreferrer" class="resource-button block w-full bg-teal-400 text-white text-center px-4 py-2.5 rounded-lg hover:bg-teal-500 shadow hover:shadow-md">學生手冊</a>
                     </div>
                 </div>
             </div>
         </div>
     </section>
     
-    <!-- AI倫理與提醒 -->
-    <section id="ai-ethics" class="py-16 px-4 bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-700 text-white fade-in-section">
+    <!-- === RESOURCES SECTION - SLIDE 3 (VIDEOS) === -->
+    <section class="py-16 px-4 bg-sky-50 fade-in-section slide">
+        <div class="container mx-auto">
+            <h3 class="text-2xl font-semibold text-center mb-8 text-gray-700">主題教材：教學影片 (AI輔助學習與討論)</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 stagger-children">
+                <!-- 國小 -->
+                <div class="bg-white p-6 rounded-xl shadow-lg resource-card" style="border-left-color: #f59e0b;"> <!-- Amber color -->
+                    <div class="flex items-center mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-amber-500 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <h4 class="text-xl font-bold text-amber-700">理財成長記 (國小)</h4>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-4">主題：借貸與信用
+                        <br><strong class="text-amber-600">AI提示：</strong>觀看後可運用Gemini設計討論題目或撰寫觀後心得摘要。
+                    </p>
+                    <div class="mt-auto">
+                         <a href="https://fsctw.sharepoint.com/:v:/s/fscvideo.fsc.gov.tw/EY3vyGMGIQ5As7n4a45irTkB3AfNSq7AodKtGWg7zNMSyw?e=viJSSG" target="_blank" rel="noopener noreferrer" class="resource-button block w-full bg-amber-500 text-white text-center px-4 py-2.5 rounded-lg hover:bg-amber-600 shadow hover:shadow-md">
+                            觀看影片
+                        </a>
+                    </div>
+                </div>
+                <!-- 國中 1 -->
+                <div class="bg-white p-6 rounded-xl shadow-lg resource-card" style="border-left-color: #10b981; transition-delay: 50ms;"> <!-- Emerald color -->
+                    <div class="flex items-center mb-3">
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-emerald-500 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <h4 class="text-xl font-bold text-emerald-700">家的撲滿 (國中)</h4>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-4">主題：理財投資
+                       <br><strong class="text-emerald-600">AI提示：</strong>用Gemini分析影片中投資決策，或生成延伸思考問題。
+                    </p>
+                    <div class="mt-auto">
+                        <a href="https://fsctw.sharepoint.com/:v:/s/fscvideo.fsc.gov.tw/EYPSnM886wVDq-_AMmOD-10B0d_JcHFcFYF1d3QPyqG6lA?e=b0ae8cc2" target="_blank" rel="noopener noreferrer" class="resource-button block w-full bg-emerald-500 text-white text-center px-4 py-2.5 rounded-lg hover:bg-emerald-600 shadow hover:shadow-md">
+                            觀看影片
+                        </a>
+                    </div>
+                </div>
+                 <!-- 國中 2 -->
+                <div class="bg-white p-6 rounded-xl shadow-lg resource-card" style="border-left-color: #0ea5e9; transition-delay: 100ms;"> <!-- Sky color -->
+                    <div class="flex items-center mb-3">
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-sky-500 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <h4 class="text-xl font-bold text-sky-700">支付的選擇 (國中)</h4>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-4">主題：金錢規劃
+                        <br><strong class="text-sky-600">AI提示：</strong>利用NotebookLM整理影片中不同支付方式的優缺點，Gemini生成比較表格。
+                    </p>
+                     <div class="mt-auto">
+                         <a href="https://fsctw.sharepoint.com/:v:/s/fscvideo.fsc.gov.tw/Ec4scKry43ZGta3OccuSwikBp3xDR6K47ohEbI3EhuqNhA?e=6X8kNO" target="_blank" rel="noopener noreferrer" class="resource-button block w-full bg-sky-500 text-white text-center px-4 py-2.5 rounded-lg hover:bg-sky-600 shadow hover:shadow-md">
+                            觀看影片
+                        </a>
+                    </div>
+                </div>
+                <!-- 高中 1 -->
+                <div class="bg-white p-6 rounded-xl shadow-lg resource-card" style="border-left-color: #ef4444; transition-delay: 150ms;"> <!-- Red color -->
+                    <div class="flex items-center mb-3">
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-500 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <h4 class="text-xl font-bold text-red-700">曼尼特務 (高中)</h4>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-4">主題：理財投資
+                        <br><strong class="text-red-600">AI提示：</strong>讓Gemini扮演影片中的角色，進行問答互動或情境延伸。
+                    </p>
+                     <div class="mt-auto">
+                         <a href="https://fsctw.sharepoint.com/:v:/s/fscvideo.fsc.gov.tw/EQgvTHJPQgROs7TiAL1DhBQBvnqFCBD6_sfqoIEMIEgb0A?e=iaeee0" target="_blank" rel="noopener noreferrer" class="resource-button block w-full bg-red-500 text-white text-center px-4 py-2.5 rounded-lg hover:bg-red-600 shadow hover:shadow-md">
+                            觀看影片
+                        </a>
+                    </div>
+                </div>
+                 <!-- 高中 2 -->
+                <div class="bg-white p-6 rounded-xl shadow-lg resource-card" style="border-left-color: #8b5cf6; transition-delay: 200ms;"> <!-- Violet color -->
+                    <div class="flex items-center mb-3">
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-violet-500 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <h4 class="text-xl font-bold text-violet-700">夢想的起點 (高中)</h4>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-4">主題：借貸與金融信用
+                         <br><strong class="text-violet-600">AI提示：</strong>用NotebookLM整理影片中關於信用的關鍵點，Gemini生成相關法律條文的白話解釋。
+                    </p>
+                     <div class="mt-auto">
+                        <a href="https://fsctw.sharepoint.com/:v:/s/fscvideo.fsc.gov.tw/EfMVB9b5o0JBs964Q8lX54wBSeVboSkFH86Wy6dARiVsBQ?e=eoE2Nm" target="_blank" rel="noopener noreferrer" class="resource-button block w-full bg-violet-500 text-white text-center px-4 py-2.5 rounded-lg hover:bg-violet-600 shadow hover:shadow-md">
+                            觀看影片
+                        </a>
+                    </div>
+                </div>
+                 <!-- 高中 3 -->
+                <div class="bg-white p-6 rounded-xl shadow-lg resource-card" style="border-left-color: #ec4899; transition-delay: 250ms;"> <!-- Pink color (from theme) -->
+                    <div class="flex items-center mb-3">
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-pink-500 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <h4 class="text-xl font-bold text-pink-700">新手上路 (高中)</h4>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-4">主題：保險與風險管理
+                        <br><strong class="text-pink-600">AI提示：</strong>Gemini生成不同風險情境，讓學生思考應對的保險類型。
+                    </p>
+                     <div class="mt-auto">
+                         <a href="https://fsctw.sharepoint.com/:v:/s/fscvideo.fsc.gov.tw/EZsf8_W0GExDllE7sxPyHYEB2qavEUH0iHOAqXkAMukatw?e=lvqeFv" target="_blank" rel="noopener noreferrer" class="resource-button block w-full bg-pink-500 text-white text-center px-4 py-2.5 rounded-lg hover:bg-pink-600 shadow hover:shadow-md">
+                            觀看影片
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="ai-ethics" class="py-16 px-4 bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-700 text-white fade-in-section slide">
         <div class="container mx-auto">
             <h2 class="text-3xl font-bold text-center mb-12">AI賦能教學的智慧與責任</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 stagger-children">
@@ -986,18 +1128,32 @@
     </footer>
 
     <!-- Mascot -->
-    <div id="mascot" title="AI小助手LiyuChill！點我回頂部～" class="fixed bottom-5 right-5 z-50 cursor-pointer opacity-0 visibility-hidden w-20 h-20 md:w-24 md:h-24">
+    <div id="mascot" title="AI小助手LiyuChill！點我互動或回頂部～" class="fixed bottom-5 right-5 z-50 cursor-pointer opacity-0 visibility-hidden w-32 h-32 md:w-36 md:h-36">
         <img src="image/LiyuChill.svg" alt="吉祥物 LiyuChill" class="w-full h-full object-contain drop-shadow-lg">
     </div>
     
+    <!-- Explosion Message -->
+    <div id="explosion-message">成為AI神不再只是夢想！</div>
+    
+    <!-- NEW: Exit Presentation Button -->
+    <button id="exit-presentation-btn" title="離開簡報模式 (Esc)" class="fixed top-6 right-8 w-11 h-11 bg-black/50 text-white border-2 border-white/80 rounded-full text-3xl font-light cursor-pointer z-[2010] flex items-center justify-center pb-1 box-border opacity-0 invisible transition-all duration-300 scale-50 hover:bg-red-600 hover:border-white hover:scale-110 hover:rotate-90">&times;</button>
+
+    <!-- Presentation Controls -->
+    <div id="presentation-controls">
+        <button id="prev-slide-btn" title="上一張 (←)">‹ 上一張</button>
+        <span id="slide-counter"></span>
+        <button id="next-slide-btn" title="下一張 (→)">下一張 ›</button>
+    </div>
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const nav = document.querySelector('nav'); 
+    const body = document.body;
 
     // --- Mobile Menu Toggle ---
     const mobileMenuButton = document.getElementById('mobile-menu-button');
     const mobileMenu = document.getElementById('mobile-menu');
-    if (mobileMenuButton && mobileMenu && nav) {
+    if (mobileMenuButton && mobileMenu) {
         mobileMenuButton.addEventListener('click', () => {
             const isExpanded = mobileMenuButton.getAttribute('aria-expanded') === 'true' || false;
             mobileMenu.classList.toggle('hidden');
@@ -1015,6 +1171,11 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('nav a[href^="#"], #mobile-menu a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
             const href = this.getAttribute('href');
+            // If in presentation mode, disable smooth scroll
+            if (body.classList.contains('presentation-mode')) {
+                e.preventDefault();
+                return;
+            }
             if (href === "#") { 
                 e.preventDefault();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1035,43 +1196,18 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
     
-    // --- Tabs Functionality (if any tabs are used, this is ready) ---
-    const tabButtons = document.querySelectorAll('.tab-button');
-    const tabContents = document.querySelectorAll('.tab-content');
-    if (tabButtons.length > 0 && tabContents.length > 0) {
-        tabButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const panelId = button.getAttribute('aria-controls');
-
-                tabButtons.forEach(btn => {
-                    btn.classList.remove('active');
-                    btn.setAttribute('aria-selected', 'false');
-                });
-                tabContents.forEach(content => {
-                    content.classList.remove('active');
-                });
-
-                button.classList.add('active');
-                button.setAttribute('aria-selected', 'true');
-                
-                const activePanel = document.getElementById(panelId);
-                if (activePanel) {
-                    activePanel.classList.add('active');
-                    staggerChildrenAnimation(activePanel.querySelectorAll('.stagger-children > *'));
-                }
-            });
-        });
-        const firstActiveButton = document.querySelector('.tab-button.active') || tabButtons[0];
-        if (firstActiveButton) {
-             firstActiveButton.click(); 
-        }
-    }
-
-    // --- Mascot & Scroll to Top ---
+    // --- Mascot Interactive Logic ---
     const mascotElement = document.getElementById('mascot');
+    const explosionMessage = document.getElementById('explosion-message');
+    let lastClickTime = 0;
+    let clickStreak = 0;
+    let clickTimer = null;
+    const MAX_STREAK = 5;
+    const CLICK_THRESHOLD_MS = 350;
+
     function toggleScrollElementsVisibility() {
-        if (mascotElement) { 
-            if (window.pageYOffset > 300) {
+        if (mascotElement) {
+            if (window.pageYOffset > 300 || body.classList.contains('presentation-mode')) {
                 mascotElement.classList.remove('opacity-0', 'visibility-hidden');
                 mascotElement.classList.add('opacity-100', 'visibility-visible');
             } else {
@@ -1081,13 +1217,73 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    function resetMascot() {
+        clickStreak = 0;
+        mascotElement.style.transform = ''; // Reset to original CSS transform
+        clearTimeout(clickTimer);
+        clickTimer = null;
+    }
+
+    function showExplosionMessage() {
+        explosionMessage.classList.add('show');
+        setTimeout(() => {
+            explosionMessage.classList.remove('show');
+        }, 2500); // Message stays for 2.5 seconds
+    }
+
+    function handleMascotClick() {
+        clearTimeout(clickTimer);
+
+        const now = new Date().getTime();
+        if (now - lastClickTime < CLICK_THRESHOLD_MS) {
+            clickStreak++;
+        } else {
+            clickStreak = 1;
+        }
+        lastClickTime = now;
+
+        if (clickStreak < MAX_STREAK) {
+            const scale = 1 + (clickStreak * 0.2);
+            const rotation = (clickStreak % 2 === 0) ? -5 * clickStreak : 5 * clickStreak;
+            mascotElement.style.transform = `scale(${scale}) rotate(${rotation}deg)`;
+            confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
+
+            clickTimer = setTimeout(() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                resetMascot();
+            }, CLICK_THRESHOLD_MS);
+
+        } else if (clickStreak === MAX_STREAK) {
+            const scale = 1 + (clickStreak * 0.2);
+            mascotElement.style.transform = `scale(${scale})`;
+
+            const duration = 1.5 * 1000;
+            const animationEnd = Date.now() + duration;
+            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 3000 };
+
+            function randomInRange(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            const interval = setInterval(function() {
+                const timeLeft = animationEnd - Date.now();
+                if (timeLeft <= 0) return clearInterval(interval);
+                const particleCount = 50 * (timeLeft / duration);
+                confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+                confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+            }, 250);
+            
+            showExplosionMessage();
+            setTimeout(resetMascot, 500);
+        }
+    }
+
     if (mascotElement) {
         window.addEventListener('scroll', toggleScrollElementsVisibility);
-        mascotElement.addEventListener('click', () => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
+        mascotElement.addEventListener('click', handleMascotClick);
+        toggleScrollElementsVisibility();
     }
-    toggleScrollElementsVisibility(); 
+
 
     // --- Staggered animation for children elements ---
     function staggerChildrenAnimation(elements) {
@@ -1105,20 +1301,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // --- Fade-in sections on scroll & Staggered children ---
     const fadeInSections = document.querySelectorAll('.fade-in-section');
-    if ("IntersectionObserver" in window) {
-        const sectionObserver = new IntersectionObserver((entries, observer) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('is-visible');
-                    const staggerElements = entry.target.querySelectorAll('.stagger-children > *');
-                    if (staggerElements.length > 0) {
-                        staggerChildrenAnimation(staggerElements);
-                    }
-                    observer.unobserve(entry.target);
+    const sectionObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                const staggerElements = entry.target.querySelectorAll('.stagger-children > *');
+                if (staggerElements.length > 0) {
+                    staggerChildrenAnimation(staggerElements);
                 }
-            });
-        }, { rootMargin: "0px 0px -10% 0px" }); 
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { rootMargin: "0px 0px -10% 0px" }); 
 
+    if ("IntersectionObserver" in window) {
         fadeInSections.forEach(section => {
             sectionObserver.observe(section);
             const initialStaggerElements = section.querySelectorAll('.stagger-children > *');
@@ -1141,6 +1337,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const accordionButtons = document.querySelectorAll('.accordion-button');
     accordionButtons.forEach(button => {
         button.addEventListener('click', () => {
+            if(body.classList.contains('presentation-mode')) {
+                 button.setAttribute('aria-expanded', 'true');
+                 const content = document.getElementById(button.getAttribute('aria-controls'));
+                 content.classList.add('open');
+                 content.style.maxHeight = content.scrollHeight + "px";
+                 return;
+            }
+
             const contentId = button.getAttribute('aria-controls');
             const content = document.getElementById(contentId);
             const isExpanded = button.getAttribute('aria-expanded') === 'true';
@@ -1157,20 +1361,99 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    document.querySelectorAll('.fade-in-section.is-visible .stagger-children > *, .stagger-children:not(.fade-in-section .stagger-children) > *').forEach(container => {
-        if(container.parentElement.classList.contains('fade-in-section') && !container.parentElement.classList.contains('is-visible')) {
-            // Do nothing if parent fade-in-section is not yet visible
-        } else {
-            // Check if direct children or children of a container that is already visible
-             let elementsToAnimate = [];
-            if (container.classList.contains('stagger-children')) { // if the container itself is .stagger-children
-                 elementsToAnimate = Array.from(container.children);
-            } else { // if we are iterating over children directly
-                 elementsToAnimate = [container];
+    // --- Presentation Mode Logic ---
+    const toggleBtn = document.getElementById('toggle-mode-btn');
+    const toggleBtnMobile = document.getElementById('toggle-mode-btn-mobile');
+    const controls = document.getElementById('presentation-controls');
+    const prevBtn = document.getElementById('prev-slide-btn');
+    const nextBtn = document.getElementById('next-slide-btn');
+    const slideCounter = document.getElementById('slide-counter');
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    const exitPresentationBtn = document.getElementById('exit-presentation-btn'); // Get the new button
+    let currentSlideIndex = 0;
+    let isPresentationMode = false;
+    let originalScrollPosition = 0;
+
+    function showSlide(index) {
+        slides.forEach((slide) => slide.classList.remove('active'));
+        const currentSlide = slides[index];
+        if (currentSlide) {
+            currentSlide.classList.add('active');
+            currentSlide.scrollTop = 0; 
+            currentSlide.classList.remove('is-visible');
+            void currentSlide.offsetWidth; 
+            currentSlide.classList.add('is-visible');
+        }
+        slideCounter.textContent = `第 ${index + 1} / ${slides.length} 頁`;
+        prevBtn.disabled = (index === 0);
+        nextBtn.disabled = (index === slides.length - 1);
+        currentSlideIndex = index;
+    }
+
+    function enterPresentationMode() {
+        isPresentationMode = true;
+        originalScrollPosition = window.pageYOffset;
+        body.classList.add('presentation-mode');
+        toggleBtn.textContent = '返回講義';
+        toggleBtnMobile.textContent = '返回講義';
+        showSlide(0); 
+        window.scrollTo(0, 0);
+        accordionButtons.forEach(button => {
+            const content = document.getElementById(button.getAttribute('aria-controls'));
+            button.setAttribute('aria-expanded', 'true');
+            content.classList.add('open');
+            content.style.maxHeight = content.scrollHeight + "px";
+        });
+        toggleScrollElementsVisibility(); // Make sure mascot is visible
+    }
+
+    function exitPresentationMode() {
+        isPresentationMode = false;
+        body.classList.remove('presentation-mode');
+        toggleBtn.textContent = '簡報模式';
+        toggleBtnMobile.textContent = '簡報模式';
+        slides.forEach(slide => slide.classList.remove('active'));
+        fadeInSections.forEach(section => {
+            if (!section.classList.contains('is-visible')) {
+                sectionObserver.observe(section);
             }
-            staggerChildrenAnimation(elementsToAnimate);
+        });
+        window.scrollTo(0, originalScrollPosition);
+        toggleScrollElementsVisibility(); 
+    }
+
+    function toggleMode() {
+        isPresentationMode ? exitPresentationMode() : enterPresentationMode();
+    }
+
+    function handleKeydown(e) {
+        if (!isPresentationMode) return;
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+            e.preventDefault();
+            if (currentSlideIndex < slides.length - 1) showSlide(currentSlideIndex + 1);
+        } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+            e.preventDefault();
+            if (currentSlideIndex > 0) showSlide(currentSlideIndex - 1);
+        } else if (e.key === 'Escape') {
+            exitPresentationMode();
+        }
+    }
+
+    toggleBtn.addEventListener('click', toggleMode);
+    toggleBtnMobile.addEventListener('click', () => {
+        toggleMode();
+        if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
+             mobileMenu.classList.add('hidden');
+             mobileMenuButton.setAttribute('aria-expanded', 'false');
         }
     });
+    nextBtn.addEventListener('click', () => { if (currentSlideIndex < slides.length - 1) showSlide(currentSlideIndex + 1); });
+    prevBtn.addEventListener('click', () => { if (currentSlideIndex > 0) showSlide(currentSlideIndex - 1); });
+    exitPresentationBtn.addEventListener('click', exitPresentationMode); // Add event listener for X button
+    document.addEventListener('keydown', handleKeydown);
+
 });
 </script>
 </body>

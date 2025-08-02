@@ -272,7 +272,7 @@
             bottom: 25px;
             right: 25px;
             width: 120px;
-            z-index: 1000;
+            z-index: 2020; /* 確保吉祥物在最上層 */
             transition: transform 0.2s ease-in-out, opacity 0.3s ease;
             cursor: pointer;
         }
@@ -349,6 +349,38 @@
             font-size: 1.2em; min-width: 100px; text-align: center;
         }
         .slide { }
+
+        /* --- NEW: Exit Presentation Button --- */
+        #exit-presentation-btn {
+            position: fixed;
+            top: 25px;
+            right: 35px;
+            width: 44px;
+            height: 44px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            font-size: 2em;
+            font-weight: 300;
+            cursor: pointer;
+            z-index: 2010; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-bottom: 4px; /* Optical adjustment */
+            box-sizing: border-box;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            transform: scale(0.5);
+        }
+        #exit-presentation-btn:hover {
+            background-color: #e53935; /* Red */
+            border-color: #fff;
+            transform: scale(1.1) rotate(90deg);
+        }
+
         body.presentation-mode {
             background-color: #212529; overflow: hidden;
         }
@@ -360,10 +392,12 @@
             overflow: hidden;
         }
         body.presentation-mode header,
-        body.presentation-mode footer,
-        body.presentation-mode #mascot { display: none; }
+        body.presentation-mode footer { display: none; }
         body.presentation-mode #presentation-controls {
             opacity: 1; visibility: visible;
+        }
+        body.presentation-mode #exit-presentation-btn {
+             opacity: 1; visibility: visible; transform: scale(1);
         }
         body.presentation-mode .slide { display: none; }
         body.presentation-mode .slide.active {
@@ -391,6 +425,55 @@
         }
         body.presentation-mode .intro-block p { font-size: 1.5em; }
         body.presentation-mode .copy-btn { padding: 8px 16px; font-size: 1em; }
+
+        /* --- NEW: Title Slide Styles --- */
+        .title-slide-container {
+            background: linear-gradient(135deg, var(--dark-blue), var(--primary-blue));
+            color: white;
+            padding: 5% 8%;
+            border-radius: 12px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            text-align: left;
+            box-sizing: border-box;
+        }
+        .title-slide-h1 {
+            font-size: 4em;
+            margin: 0 0 15px 0;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+        .title-slide-subtitle {
+            font-size: 2.2em;
+            opacity: 0.9;
+            margin: 0;
+        }
+        .title-slide-separator {
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            margin: 40px 0; /* More spacing */
+            width: 100%;
+        }
+        .title-slide-presenter {
+            font-size: 1.8em;
+            opacity: 0.85;
+            font-weight: 400;
+            margin: 0;
+        }
+        /* Make the whole title slide un-styled in normal mode */
+        body:not(.presentation-mode) .title-slide-container { display: none; }
+        
+        @media (max-width: 900px) {
+            .title-slide-h1 { font-size: 3em; }
+            .title-slide-subtitle { font-size: 1.8em; }
+            .title-slide-presenter { font-size: 1.5em; }
+        }
+        @media (max-width: 600px) {
+            .title-slide-h1 { font-size: 2.5em; }
+            .title-slide-subtitle { font-size: 1.5em; }
+            .title-slide-presenter { font-size: 1.2em; }
+        }
     </style>
 </head>
 <body>
@@ -405,6 +488,16 @@
             </div>
             <button id="toggle-mode-btn">切換簡報模式</button>
         </header>
+
+        <!-- === NEW: Title Slide === -->
+        <div class="slide">
+            <div class="title-slide-container">
+                <h1 class="title-slide-h1">NotebookLM 實作工作坊講義</h1>
+                <p class="title-slide-subtitle">以「防範金融詐騙」為例</p>
+                <div class="title-slide-separator"></div>
+                <p class="title-slide-presenter">分享人：新北市立雙溪高中 邱俐瑜老師</p>
+            </div>
+        </div>
         
         <h2 class="section-title slide">課程介紹：何時用 NotebookLM？</h2>
         <div class="important-note slide">
@@ -745,6 +838,9 @@
         <img src="image/LiyuChill.svg" alt="鯉魚邱老虎">
     </div>
 
+    <!-- NEW: Exit Presentation Button -->
+    <button id="exit-presentation-btn" title="離開簡報模式 (Esc)">&times;</button>
+
     <div id="presentation-controls">
         <button id="prev-slide-btn">‹ 上一張</button>
         <span id="slide-counter"></span>
@@ -760,6 +856,7 @@
         const nextBtn = document.getElementById('next-slide-btn');
         const slideCounter = document.getElementById('slide-counter');
         const slides = Array.from(document.querySelectorAll('.slide'));
+        const exitPresentationBtn = document.getElementById('exit-presentation-btn'); // Get the new button
         let currentSlideIndex = 0;
         let isPresentationMode = false;
         let originalScrollPosition = 0;
@@ -781,6 +878,7 @@
             originalScrollPosition = window.pageYOffset;
             body.classList.add('presentation-mode');
             toggleBtn.textContent = '返回講義模式';
+            // Start from the new title slide (index 0)
             currentSlideIndex = 0; 
             showSlide(currentSlideIndex);
             window.scrollTo(0, 0);
@@ -814,6 +912,7 @@
         toggleBtn.addEventListener('click', toggleMode);
         nextBtn.addEventListener('click', () => { if (currentSlideIndex < slides.length - 1) showSlide(++currentSlideIndex); });
         prevBtn.addEventListener('click', () => { if (currentSlideIndex > 0) showSlide(--currentSlideIndex); });
+        exitPresentationBtn.addEventListener('click', exitPresentationMode); // Add event listener for X button
         document.addEventListener('keydown', handleKeydown);
 
         // --- 一鍵複製功能 (圖示切換) ---
