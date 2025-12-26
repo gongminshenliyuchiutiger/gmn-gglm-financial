@@ -109,6 +109,32 @@
             font-weight: 400;
             border-top: 1px solid rgba(255, 255, 255, 0.2);
             padding-top: 15px;
+            margin-bottom: 10px; /* 增加底部間距給 FB 按鈕 */
+        }
+
+        /* --- 新增：FB粉專按鈕樣式 --- */
+        .fb-link-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.95em;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            padding: 6px 16px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+        .fb-link-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            border-color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .fb-link-btn i {
+            font-size: 1.2em;
         }
 
         .section-title {
@@ -459,7 +485,7 @@
             font-size: 1.8em;
             opacity: 0.85;
             font-weight: 400;
-            margin: 0;
+            margin: 0 0 20px 0;
         }
         /* Make the whole title slide un-styled in normal mode */
         body:not(.presentation-mode) .title-slide-container { display: none; }
@@ -485,6 +511,10 @@
                 <h1>NotebookLM 實作工作坊講義</h1>
                 <p class="subtitle">以「防範金融詐騙」為例</p>
                 <p class="presenter">分享人：新北市立雙溪高中 邱俐瑜老師</p>
+                <!-- 新增：FB粉專按鈕 -->
+                <a href="https://www.facebook.com/happyliyuchilltiger" target="_blank" class="fb-link-btn" title="前往粉專">
+                    <i class="fab fa-facebook"></i> 快樂鯉魚秋老虎
+                </a>
             </div>
             <button id="toggle-mode-btn">切換簡報模式</button>
         </header>
@@ -496,6 +526,12 @@
                 <p class="title-slide-subtitle">以「防範金融詐騙」為例</p>
                 <div class="title-slide-separator"></div>
                 <p class="title-slide-presenter">分享人：新北市立雙溪高中 邱俐瑜老師</p>
+                <!-- 新增：FB粉專按鈕 (簡報模式) -->
+                <div>
+                    <a href="https://www.facebook.com/happyliyuchilltiger" target="_blank" class="fb-link-btn" title="前往粉專" style="font-size: 1.2em; padding: 10px 25px;">
+                        <i class="fab fa-facebook"></i> 快樂鯉魚秋老虎
+                    </a>
+                </div>
             </div>
         </div>
         

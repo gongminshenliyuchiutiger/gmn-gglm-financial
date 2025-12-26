@@ -113,6 +113,36 @@
             padding-top: 15px;
         }
 
+        /* --- 新增：FB 按鈕樣式 --- */
+        .fb-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 12px;
+            padding: 8px 16px;
+            color: #fff;
+            text-decoration: none;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+            font-size: 0.95em;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            font-weight: 500;
+        }
+
+        .fb-btn:hover {
+            background-color: #fff;
+            color: var(--primary-purple);
+            border-color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .fb-btn i {
+            font-size: 1.2em;
+        }
+        /* ----------------------- */
+
         .section-title {
             font-size: 2.3em;
             color: var(--secondary-purple);
@@ -485,6 +515,11 @@
                 <h1>Gemini 實作工作坊講義</h1>
                 <p class="subtitle">以「防範金融詐騙」為例</p>
                 <p class="presenter">分享人：新北市立雙溪高中 邱俐瑜老師</p>
+                
+                <!-- 新增：Facebook 粉專按鈕 -->
+                <a href="https://www.facebook.com/happyliyuchilltiger" target="_blank" rel="noopener noreferrer" class="fb-btn">
+                    <i class="fab fa-facebook"></i> 快樂鯉魚秋老虎
+                </a>
             </div>
             <button id="toggle-mode-btn">切換簡報模式</button>
         </header>
@@ -532,10 +567,11 @@
                 <span class="action-title">1. 選擇模型 (Model)</span>
                 <!-- 【內容更新】將模型版本改回 2.5 -->
                 <div class="instruction">
-                    在畫面上方，您可以看到目前的模型，例如 <b>2.5 Flash</b>。點擊它可以切換模型：
+                    在畫面上方，您可以看到目前的模型，例如 <b>3 Flash</b>。點擊它可以切換模型：
                     <ul>
-                        <li><b>2.5 Flash：</b>速度快，適合快速問答、創意發想、內容摘要。</li>
-                        <li><b>2.5 Pro：</b>能力更強，適合複雜的邏輯推理、程式設計、深度分析。</li>
+                        <li><b>3 Flash(快捷)：</b>速度快，適合快速問答、創意發想、內容摘要。</li>
+			<li><b>3 思考型：</b>解決複雜問題。</li>
+                        <li><b>3 Pro：</b>思考時間較長，適合處理進階數學和程式設計問題。</li>
                     </ul>
                 </div>
                 <span class="action-title">2. 認識輸入框功能</span>
@@ -546,7 +582,7 @@
                         <li><b>上傳檔案 <i class="fa-solid fa-plus"></i>：</b>點擊這裡可以上傳圖片、文件等檔案讓 Gemini 分析。</li>
                         <li><b>Deep Research <i class="fa-solid fa-magnifying-glass"></i>：</b>針對問題進行更深入、更廣泛的網路搜尋與分析，產生詳細報告。</li>
                         <li><b>Canvas <i class="fa-solid fa-clone"></i>：</b>線上白板，可以將想法視覺化、組織成心智圖或流程圖。</li>
-			            <li><b>圖像 <i class="fa-solid fa-images"></i>：</b>根據文字描述，創作或生成新的圖片的功能。</li>
+			            <li><b>建立圖像 <i class="fa-solid fa-images"></i>：</b>根據文字描述，創作或生成新的圖片的功能。</li>
                         <li><b>麥克風 <i class="fa-solid fa-microphone"></i>：</b>在最右側，點擊後可用語音輸入您的指令。</li>
                     </ul>
                 </div>
